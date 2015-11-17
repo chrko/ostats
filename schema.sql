@@ -113,6 +113,18 @@ CREATE TABLE `player_overall` (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
+DROP TABLE IF EXISTS `player_log_name`;
+CREATE TABLE `player_log_name` (
+  `server_id` VARCHAR(10)      NOT NULL,
+  `id`        INT(10) UNSIGNED NOT NULL,
+  `seen`      TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `old_name`  VARCHAR(50)      NOT NULL,
+  `new_name`  VARCHAR(50)      NOT NULL,
+  PRIMARY KEY (`server_id`, `id`, `seen`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 DROP TABLE IF EXISTS `alliance_member`;
 CREATE TABLE `alliance_member` (
   `server_id`   VARCHAR(10)      NOT NULL,
@@ -361,5 +373,16 @@ FOR EACH ROW BEGIN
     `outlaw`        = NEW.`outlaw`,
     `admin`         = NEW.`admin`
   WHERE `id` = NEW.`id` AND `server_id` = NEW.`server_id`;
+
+  IF OLD.`name` <> NEW.`name`
+  THEN
+    INSERT IGNORE INTO `player_log_name` VALUES (
+      NEW.`server_id`,
+      NEW.`id`,
+      NEW.`last_update`,
+      OLD.`name`,
+      NEW.`name`
+    );
+  END IF;
 END $$
 DELIMITER ;
