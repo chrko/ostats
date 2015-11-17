@@ -194,52 +194,24 @@ CREATE TABLE `moon` (
 
 DROP TABLE IF EXISTS `highscore_alliance`;
 CREATE TABLE `highscore_alliance` (
-  `server_id`                 VARCHAR(10)                           NOT NULL,
-  `alliance_id`               INT       UNSIGNED                    NOT NULL,
-  `total_points`              BIGINT    UNSIGNED                    NOT NULL,
-  `total_rank`                SMALLINT  UNSIGNED                    NOT NULL,
-  `economy_points`            BIGINT    UNSIGNED                    NOT NULL,
-  `economy_rank`              SMALLINT  UNSIGNED                    NOT NULL,
-  `research_points`           BIGINT    UNSIGNED                    NOT NULL,
-  `resarch_rank`              SMALLINT  UNSIGNED                    NOT NULL,
-  `military_points`           BIGINT    UNSIGNED                    NOT NULL,
-  `military_rank`             SMALLINT  UNSIGNED                    NOT NULL,
-  `military_built_points`     BIGINT    UNSIGNED                    NOT NULL,
-  `military_built_rank`       SMALLINT  UNSIGNED                    NOT NULL,
-  `military_destroyed_points` BIGINT    UNSIGNED                    NOT NULL,
-  `military_destroyed_rank`   SMALLINT  UNSIGNED                    NOT NULL,
-  `military_lost_points`      BIGINT    UNSIGNED                    NOT NULL,
-  `military_lost_rank`        SMALLINT  UNSIGNED                    NOT NULL,
-  `honor_points`              INT                                   NOT NULL,
-  `honor_rank`                SMALLINT  UNSIGNED                    NOT NULL,
-  `last_update`               TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `alliance_id`)
+  `server_id`   VARCHAR(10)                           NOT NULL,
+  `type`        TINYINT                               NOT NULL,
+  `alliance_id` INT       UNSIGNED                    NOT NULL,
+  `points`      BIGINT    UNSIGNED                    NOT NULL,
+  `seen`        TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`server_id`, `type`, `alliance_id`, `points`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
 DROP TABLE IF EXISTS `highscore_player`;
 CREATE TABLE `highscore_player` (
-  `server_id`                 VARCHAR(10)                           NOT NULL,
-  `player_id`                 INT       UNSIGNED                    NOT NULL,
-  `total_points`              BIGINT    UNSIGNED                    NOT NULL,
-  `total_rank`                SMALLINT  UNSIGNED                    NOT NULL,
-  `economy_points`            BIGINT    UNSIGNED                    NOT NULL,
-  `economy_rank`              SMALLINT  UNSIGNED                    NOT NULL,
-  `research_points`           BIGINT    UNSIGNED                    NOT NULL,
-  `resarch_rank`              SMALLINT  UNSIGNED                    NOT NULL,
-  `military_points`           BIGINT    UNSIGNED                    NOT NULL,
-  `military_rank`             SMALLINT  UNSIGNED                    NOT NULL,
-  `military_built_points`     BIGINT    UNSIGNED                    NOT NULL,
-  `military_built_rank`       SMALLINT  UNSIGNED                    NOT NULL,
-  `military_destroyed_points` BIGINT    UNSIGNED                    NOT NULL,
-  `military_destroyed_rank`   SMALLINT  UNSIGNED                    NOT NULL,
-  `military_lost_points`      BIGINT    UNSIGNED                    NOT NULL,
-  `military_lost_rank`        SMALLINT  UNSIGNED                    NOT NULL,
-  `honor_points`              INT                                   NOT NULL,
-  `honor_rank`                SMALLINT  UNSIGNED                    NOT NULL,
-  `last_update`               TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `player_id`)
+  `server_id` VARCHAR(10)                           NOT NULL,
+  `type`      TINYINT                               NOT NULL,
+  `player_id` INT       UNSIGNED                    NOT NULL,
+  `points`    BIGINT    UNSIGNED                    NOT NULL,
+  `seen`      TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`server_id`, `type`, `player_id`, `points`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
