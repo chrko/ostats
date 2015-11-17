@@ -37,8 +37,7 @@ CREATE TABLE `alliance_log_name` (
   `seen`        TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `old_name`    VARCHAR(30)      NOT NULL,
   `new_name`    VARCHAR(30)      NOT NULL,
-  PRIMARY KEY (`server_id`, `alliance_id`, `seen`),
-  CONSTRAINT `alliance_log_name_ibfk_1` FOREIGN KEY (`server_id`, `alliance_id`) REFERENCES `alliance_overall` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `alliance_id`, `seen`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -50,8 +49,7 @@ CREATE TABLE `alliance_log_tag` (
   `seen`        TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `old_tag`     VARCHAR(8)       NOT NULL,
   `new_tag`     VARCHAR(8)       NOT NULL,
-  PRIMARY KEY (`server_id`, `alliance_id`, `seen`),
-  CONSTRAINT `alliance_log_tag_ibfk_1` FOREIGN KEY (`server_id`, `alliance_id`) REFERENCES `alliance_overall` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `alliance_id`, `seen`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -63,8 +61,7 @@ CREATE TABLE `alliance_log_homepage` (
   `seen`         TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `old_homepage` VARCHAR(2000)             DEFAULT NULL,
   `new_homepage` VARCHAR(2000)             DEFAULT NULL,
-  PRIMARY KEY (`server_id`, `alliance_id`, `seen`),
-  CONSTRAINT `alliance_log_homepage_ibfk_1` FOREIGN KEY (`server_id`, `alliance_id`) REFERENCES `alliance_overall` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `alliance_id`, `seen`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -76,8 +73,7 @@ CREATE TABLE `alliance_log_logo` (
   `seen`        TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `old_logo`    VARCHAR(2000)             DEFAULT NULL,
   `new_logo`    VARCHAR(2000)             DEFAULT NULL,
-  PRIMARY KEY (`server_id`, `alliance_id`, `seen`),
-  CONSTRAINT `alliance_log_logo_ibfk_1` FOREIGN KEY (`server_id`, `alliance_id`) REFERENCES `alliance_overall` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `alliance_id`, `seen`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -124,9 +120,7 @@ CREATE TABLE `alliance_member` (
   `player_id`   INT(10) UNSIGNED NOT NULL,
   `first_seen`  TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_update` TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `alliance_id`, `player_id`),
-  CONSTRAINT `alliance_member_ibfk_1` FOREIGN KEY (`server_id`, `alliance_id`) REFERENCES `alliance` (`server_id`, `id`),
-  CONSTRAINT `alliance_member_ibfk_2` FOREIGN KEY (`server_id`, `player_id`) REFERENCES `player` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `alliance_id`, `player_id`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -138,9 +132,7 @@ CREATE TABLE `alliance_member_log` (
   `player_id`   INT(10) UNSIGNED NOT NULL,
   `first_seen`  TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_seen`   TIMESTAMP        NULL     DEFAULT NULL,
-  PRIMARY KEY (`server_id`, `alliance_id`, `player_id`, `first_seen`),
-  CONSTRAINT `alliance_member_log_ibfk_1` FOREIGN KEY (`server_id`, `alliance_id`) REFERENCES `alliance_overall` (`server_id`, `id`),
-  CONSTRAINT `alliance_member_log_ibfk_2` FOREIGN KEY (`server_id`, `player_id`) REFERENCES `player_overall` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `alliance_id`, `player_id`, `first_seen`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -180,8 +172,7 @@ CREATE TABLE `planet` (
   `first_seen`  TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_update` TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`server_id`, `id`),
-  UNIQUE KEY `coords` (`server_id`, `galaxy`, `system`, `position`),
-  CONSTRAINT `planet_ibfk_1` FOREIGN KEY (`server_id`, `player_id`) REFERENCES `player` (`server_id`, `id`)
+  KEY `system` (`server_id`, `galaxy`, `system`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -196,8 +187,7 @@ CREATE TABLE `moon` (
   `name`        VARCHAR(50)      NOT NULL,
   `first_seen`  TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_update` TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `id`),
-  CONSTRAINT `moon_ibfk_1` FOREIGN KEY (`server_id`, `planet_id`) REFERENCES `planet` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `id`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -223,8 +213,7 @@ CREATE TABLE `highscore_alliance` (
   `honor_points`              INT                                   NOT NULL,
   `honor_rank`                SMALLINT  UNSIGNED                    NOT NULL,
   `last_update`               TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `alliance_id`),
-  CONSTRAINT `highscore_alliance_ibfk_1` FOREIGN KEY (`server_id`, `alliance_id`) REFERENCES `alliance` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `alliance_id`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -250,8 +239,7 @@ CREATE TABLE `highscore_player` (
   `honor_points`              INT                                   NOT NULL,
   `honor_rank`                SMALLINT  UNSIGNED                    NOT NULL,
   `last_update`               TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `player_id`),
-  CONSTRAINT `highscore_player_ibfk_1` FOREIGN KEY (`server_id`, `player_id`) REFERENCES `player` (`server_id`, `id`)
+  PRIMARY KEY (`server_id`, `player_id`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
