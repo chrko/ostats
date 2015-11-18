@@ -525,3 +525,19 @@ FOR EACH ROW INSERT INTO `moon_overall` VALUES (
 ON DUPLICATE KEY UPDATE
   `name`      = OLD.`name`,
   `last_seen` = OLD.`last_update`;
+
+
+DROP TABLE IF EXISTS `tasks`;
+CREATE TABLE `tasks` (
+  `id`        INT(10) UNSIGNED    NOT NULL     AUTO_INCREMENT,
+  `due_time`  TIMESTAMP           NOT NULL     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `server_id` VARCHAR(10)         NOT NULL,
+  `endpoint`  VARCHAR(20)         NOT NULL,
+  `category`  TINYINT(1) UNSIGNED NOT NULL     DEFAULT 0,
+  `type`      TINYINT(1) UNSIGNED NOT NULL     DEFAULT 0,
+  `running`   TINYINT(1) UNSIGNED              DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `due_time` (`due_time`, `server_id`, `endpoint`, `category`, `type`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
