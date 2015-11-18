@@ -386,3 +386,142 @@ FOR EACH ROW BEGIN
   END IF;
 END $$
 DELIMITER ;
+
+
+DROP TABLE IF EXISTS `planet_overall`;
+CREATE TABLE `planet_overall` (
+  `server_id`  VARCHAR(10)          NOT NULL,
+  `id`         INT(10) UNSIGNED     NOT NULL,
+  `name`       VARCHAR(40)          NOT NULL,
+  `galaxy`     TINYINT(2) UNSIGNED  NOT NULL,
+  `system`     SMALLINT(3) UNSIGNED NOT NULL,
+  `position`   TINYINT(2) UNSIGNED  NOT NULL,
+  `player_id`  INT(10) UNSIGNED     NOT NULL,
+  `first_seen` TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_seen`  TIMESTAMP            NULL     DEFAULT NULL,
+  PRIMARY KEY (`server_id`, `id`),
+  KEY `system` (`server_id`, `galaxy`, `system`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+DROP TRIGGER IF EXISTS `planet_insert`;
+CREATE TRIGGER `planet_insert` AFTER INSERT ON `planet`
+FOR EACH ROW INSERT INTO `planet_overall` VALUES (
+  NEW.`server_id`,
+  NEW.`id`,
+  NEW.`name`,
+  NEW.`galaxy`,
+  NEW.`system`,
+  NEW.`position`,
+  NEW.`player_id`,
+  NEW.`first_seen`,
+  NULL
+)
+ON DUPLICATE KEY UPDATE
+  `name`      = NEW.`name`,
+  `galaxy`    = NEW.`galaxy`,
+  `system`    = NEW.`system`,
+  `position`  = NEW.`position`,
+  `last_seen` = NULL;
+
+DROP TRIGGER IF EXISTS `planet_update`;
+CREATE TRIGGER `planet_update` AFTER UPDATE ON `planet`
+FOR EACH ROW INSERT INTO `planet_overall` VALUES (
+  NEW.`server_id`,
+  NEW.`id`,
+  NEW.`name`,
+  NEW.`galaxy`,
+  NEW.`system`,
+  NEW.`position`,
+  NEW.`player_id`,
+  NEW.`first_seen`,
+  NULL
+)
+ON DUPLICATE KEY UPDATE
+  `name`      = NEW.`name`,
+  `galaxy`    = NEW.`galaxy`,
+  `system`    = NEW.`system`,
+  `position`  = NEW.`position`,
+  `last_seen` = NULL;
+
+DROP TRIGGER IF EXISTS `planet_delete`;
+CREATE TRIGGER `planet_delete` AFTER DELETE ON `planet`
+FOR EACH ROW INSERT INTO `planet_overall` VALUES (
+  OLD.`server_id`,
+  OLD.`id`,
+  OLD.`name`,
+  OLD.`galaxy`,
+  OLD.`system`,
+  OLD.`position`,
+  OLD.`player_id`,
+  OLD.`first_seen`,
+  OLD.`last_update`
+)
+ON DUPLICATE KEY UPDATE
+  `name`      = OLD.`name`,
+  `galaxy`    = OLD.`galaxy`,
+  `system`    = OLD.`system`,
+  `position`  = OLD.`position`,
+  `last_seen` = OLD.`last_update`;
+
+
+DROP TABLE IF EXISTS `moon_overall`;
+CREATE TABLE `moon_overall` (
+  `server_id`  VARCHAR(10)      NOT NULL,
+  `id`         INT(10) UNSIGNED NOT NULL,
+  `planet_id`  INT(10) UNSIGNED NOT NULL,
+  `size`       INT(5) UNSIGNED  NOT NULL,
+  `name`       VARCHAR(50)      NOT NULL,
+  `first_seen` TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_seen`  TIMESTAMP        NULL     DEFAULT NULL,
+  PRIMARY KEY (`server_id`, `id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+
+DROP TRIGGER IF EXISTS `moon_insert`;
+CREATE TRIGGER `moon_insert` AFTER INSERT ON `moon`
+FOR EACH ROW INSERT INTO `moon_overall` VALUES (
+  NEW.`server_id`,
+  NEW.`id`,
+  NEW.`planet_id`,
+  NEW.`size`,
+  NEW.`name`,
+  NEW.`first_seen`,
+  NULL
+)
+ON DUPLICATE KEY UPDATE
+  `name`      = NEW.`name`,
+  `last_seen` = NULL;
+
+DROP TRIGGER IF EXISTS `moon_update`;
+CREATE TRIGGER `moon_update` AFTER UPDATE ON `moon`
+FOR EACH ROW INSERT INTO `moon_overall` VALUES (
+  NEW.`server_id`,
+  NEW.`id`,
+  NEW.`planet_id`,
+  NEW.`size`,
+  NEW.`name`,
+  NEW.`first_seen`,
+  NULL
+)
+ON DUPLICATE KEY UPDATE
+  `name`      = NEW.`name`,
+  `last_seen` = NULL;
+
+DROP TRIGGER IF EXISTS `moon_delete`;
+CREATE TRIGGER `moon_delete` AFTER DELETE ON `moon`
+FOR EACH ROW INSERT INTO `moon_overall` VALUES (
+  OLD.`server_id`,
+  OLD.`id`,
+  OLD.`planet_id`,
+  OLD.`size`,
+  OLD.`name`,
+  OLD.`first_seen`,
+  NULL
+)
+ON DUPLICATE KEY UPDATE
+  `name`      = OLD.`name`,
+  `last_seen` = OLD.`last_update`;
