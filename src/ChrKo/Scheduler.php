@@ -104,7 +104,7 @@ class Scheduler
                 $task['delay'] = date('H:i:s', time() - strtotime($task['due_time']));
 
                 echo DB::namedReplace(
-                    'Starting task :endpoint on server :server_id (:category, :type) due :due_time, :delay...',
+                    'task :endpoint on server :server_id (:category, :type) due :due_time, :delay...',
                     $task
                 );
 
@@ -138,7 +138,7 @@ class Scheduler
                 }
                 $db->query('DELETE FROM `tasks` WHERE `id` = ' . $task['id']);
 
-                echo 'finished task', "\n";
+                echo 'finished', "\n";
             } else {
                 $result->close();
                 $db->rollback();
