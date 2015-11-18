@@ -73,11 +73,13 @@ class Scheduler
 
             $db = DB::getConn();
 
-            if (!$db->autocommit(false) || !$db->begin_transaction()) {
-                echo 'Cannot disable autocommit or start transaction...';
+            if (!$db->autocommit(false)) {
+                echo 'Cannot disable autocommit';
                 sleep(60);
                 continue;
             }
+
+            $db->query('LOCK TABLES `tasks` WRITE;');
 
             $result = $db->query(
                 'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . ' \'ORDER BY `due_time` ASC LIMIT 1;'
@@ -93,9 +95,9 @@ class Scheduler
                     echo $db->error, "\n";
                     continue;
                 };
-                if (!($db->commit() && $db->autocommit(true))) {
-                    echo 'Unable to commit or enable autocommit, try rollback';
-                    $db->rollback();
+                $db->query('UNLOCK TABLES;');
+                if (!$db->autocommit(true)) {
+                    echo 'Unable to enable autocommit';
                     continue;
                 }
 
@@ -141,7 +143,7 @@ class Scheduler
                 echo 'finished', "\n";
             } else {
                 $result->close();
-                $db->rollback();
+                $db->query('UNLOCK TABLES;');
                 $db->autocommit(true);
                 $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ORDER BY `due_time` ASC LIMIT 1');
                 $timeToSleep = 30;
