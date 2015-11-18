@@ -17,7 +17,7 @@ echo 'Delay tasks ', $delayedTasks, "\n";
 
 if ($resultDelayedTime->num_rows == 1) {
     $result = $resultDelayedTime->fetch_array();
-    $delayedTime = $result[0] == 'NULL' ? (time() - strtotime($result[0])) : 0;
+    $delayedTime = $result[0] != 'NULL' ? (time() - strtotime($result[0])) : 0;
 }
 
 $delayedTime = $delayedTime < 0 ? 0 : $delayedTime;
