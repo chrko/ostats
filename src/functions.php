@@ -75,7 +75,7 @@ function readPlayerData($serverBase, $cache = false)
     $server_id = $xml->getAttribute('serverId');
 
     if ($cache) {
-        file_put_contents("cache/players.${serverId}.${timestamp}.xml", file_get_contents($url));
+        file_put_contents("cache/players.${server_id}.${timestamp}.xml", file_get_contents($url));
     }
 
     $players = array();
@@ -136,7 +136,7 @@ function readAllianceData($serverBase, $cache = false)
     $server_id = $xml->getAttribute('serverId');
 
     if ($cache) {
-        file_put_contents("cache/alliances.${serverId}.${timestamp}.xml", file_get_contents($url));
+        file_put_contents("cache/alliances.${server_id}.${timestamp}.xml", file_get_contents($url));
     }
 
     $alliances = array();
@@ -358,6 +358,8 @@ function bulkUpdateHighscore($serverBase, array $categories = null, array $types
         $types = $typesValues;
     }
 
+    $typesNormalized = [];
+
     foreach ($types as $value) {
         $typesNormalized[$typesKeys[(string)$value]] = $typesValues[$typesKeys[(string)$value]];
     }
@@ -367,7 +369,7 @@ function bulkUpdateHighscore($serverBase, array $categories = null, array $types
 
         $updater = new \ChrKo\HighscoreUpdater($categoryName);
 
-        foreach ($types as $typeId => $type) {
+        foreach ($typesNormalized as $typeId => $type) {
             $url = $prefix . $typeId;
             $xml = new XMLReaderProxy();
             $xml->open($url);

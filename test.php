@@ -1,63 +1,56 @@
 <?php
 
+$start = time();
+
 require_once('bootstrap.php');
 
 use ChrKo\AllianceMemberUpdater;
 use ChrKo\XMLReaderProxy;
 
 if ($argc == 2) {
-    $startServerBase = [
-        getServerBaseById($argv[1])
+    $server_ids = [
+        $argv[1]
     ];
 
 } else {
     $server_ids = [
-        'ar101',
-        'br1',
-        'cz101',
-        'de1',
-        'dk1',
-        'en1',
-        'es1',
-        'fi101',
-        'fr1',
-        'gr1',
-        'hu101',
-        'hr104',
-        'it1',
-        'jp101',
-        'mx101',
-        'nl101',
-        'no101',
-        'pl1',
-        'pt101',
-        'ru1',
-        'ro1',
-        'se1',
-        'si101',
-        'sk101',
-        'tr1',
-        'tw101',
-        'us1'
+        //'ar101',
+        //'br1',
+        //'cz101',
+        //'de1',
+        //'dk1',
+        //'en1',
+        //'es1',
+        //'fi101',
+        //'fr1',
+        //'gr1',
+        //'hu101',
+        //'hr104',
+        //'it1',
+        //'jp101',
+        //'mx101',
+        //'nl101',
+        //'no101',
+        //'pl1',
+        //'pt101',
+        //'ru1',
+        //'ro1',
+        //'se1',
+        //'si101',
+        //'sk101',
+        //'tr1',
+        //'tw101',
+        //'us1',
     ];
-
-    $startServerBase = [
-        'http://s670-en.ogame.gameforge.com',
-    ];
-
-    foreach ($server_ids as $server_id) {
-        showMemUsage();
-        $startServerBase[] = getServerBaseById($server_id);
-    }
 }
 
 
 $serverBases = array();
 
-foreach ($startServerBase as $startBase) {
+foreach ($server_ids as $server_id) {
     showMemUsage();
     $xml = new XMLReaderProxy();
-    $xml->open($startBase . '/api/universes.xml');
+    $xml->open(getServerBaseById($server_id) . '/api/universes.xml');
 
     $xml->read(true);
 
@@ -79,6 +72,7 @@ $serverBases = array_unique($serverBases);
 //$serverBases = ['http://s127-de.ogame.gameforge.com',];
 
 foreach ($serverBases as $serverBase) {
+    echo date('H:i:s ', time() - $start);
     showMemUsage();
     $allianceData = readAllianceData($serverBase);
     echo $allianceData['server_id'], "\n";
@@ -101,4 +95,4 @@ foreach ($serverBases as $serverBase) {
     bulkUpdateUniverse($serverBase);
 }
 
-var_dump(true);
+echo "\nElapsed time: ", date('H:i:s ', time() - $start);
