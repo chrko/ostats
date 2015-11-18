@@ -13,37 +13,8 @@ if ($argc == 2) {
     ];
 
 } else {
-    $server_ids = [
-        //'ar101',
-        //'br1',
-        //'cz101',
-        //'de1',
-        //'dk1',
-        //'en1',
-        //'es1',
-        //'fi101',
-        //'fr1',
-        //'gr1',
-        //'hu101',
-        //'hr104',
-        //'it1',
-        //'jp101',
-        //'mx101',
-        //'nl101',
-        //'no101',
-        //'pl1',
-        //'pt101',
-        //'ru1',
-        //'ro1',
-        //'se1',
-        //'si101',
-        //'sk101',
-        //'tr1',
-        //'tw101',
-        //'us1',
-    ];
+    $server_ids = explode("\n",file_get_contents('initial.list'));
 }
-
 
 $serverBases = array();
 
