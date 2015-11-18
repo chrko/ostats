@@ -377,7 +377,7 @@ function bulkUpdateHighscore($serverBase, array $categories = null, array $types
             $server_id = $xml->getAttribute('serverId');
 
             $timestamp = (int)$xml->getAttribute('timestamp');
-            $last_update = date('Y - m - d H:i:s', $timestamp);
+            $last_update = date('Y-m-d H:i:s', $timestamp);
 
             if ($cache) {
                 file_put_contents("cache/highscore.${categoryId}.${typeId}.${timestamp}.xml", file_get_contents($url));
