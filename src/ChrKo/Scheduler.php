@@ -7,6 +7,16 @@ class Scheduler
 {
     protected static $end = false;
 
+    public static function getAllowedEndpoints()
+    {
+        return [
+            'players',
+            'alliances',
+            'universe',
+            'highscore'
+        ];
+    }
+
     public static function schedule($due_time, $server_id, $endpoint, $category = 0, $type = 0)
     {
         $data = [
@@ -146,11 +156,19 @@ class Scheduler
                 $db->query('UNLOCK TABLES;');
                 $db->autocommit(true);
                 $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ORDER BY `due_time` ASC LIMIT 1');
-                $timeToSleep = 30;
+
+                $timeToSleepMin = 30;
+                $timeToSleepMax = 600;
+
+                $timeToSleep = $timeToSleepMin;
                 if ($result->num_rows == 1) {
                     $timeToSleep = strtotime($result->fetch_object()->due_time) - time() + 1;
-                    $timeToSleep = $timeToSleep >= 30 ? $timeToSleep : 30;
+                    $timeToSleep = $timeToSleep >= $timeToSleepMin ? $timeToSleep : $timeToSleepMin;
                 }
+
+                $timeToSleep = $timeToSleep > $timeToSleepMax ? $timeToSleepMax : $timeToSleep;
+                $timeToSleep = $timeToSleep < $timeToSleepMin ? $timeToSleepMin : $timeToSleep;
+
                 $result->close();
                 echo "Nothing to do for ${timeToSleep} seconds...\n";
 
