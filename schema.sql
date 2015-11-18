@@ -537,7 +537,7 @@ CREATE TABLE `tasks` (
   `type`      TINYINT(1) UNSIGNED NOT NULL     DEFAULT 0,
   `running`   TINYINT(1) UNSIGNED              DEFAULT 0,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `due_time` (`due_time`, `server_id`, `endpoint`, `category`, `type`)
+  UNIQUE KEY `job_type` (`server_id`, `endpoint`, `category`, `type`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
