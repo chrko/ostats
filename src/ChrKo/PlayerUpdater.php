@@ -7,17 +7,17 @@ class PlayerUpdater extends Updater
 {
     public static function clean($server_id, $last_update)
     {
-        $result = \ChrKo\DB::getConn()->query("SELECT `id` FROM `player` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
+        $result = DB::getConn()->query("SELECT `id` FROM `player` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
         $deleted_player_ids = array_map(function ($v) {
             return intval($v[0]);
         }, $result->fetch_all());
 
         $result->close();
         if (count($deleted_player_ids) > 0) {
-            $query = 'DELETE FROM `alliance_member` WHERE `player_id` IN (' . implode(',', $deleted_player_ids) . ') AND `server_id` = \'' . $server_id . '\';';
-            $query .= 'DELETE FROM `player` WHERE `id` IN (' . implode(',', $deleted_player_ids) . ') AND `server_id` = \'' . $server_id . '\';';
-            \ChrKo\DB::getConn()->query($query);
-            echo \ChrKo\DB::getConn()->error, "\n";
+            $query = 'DELETE FROM `alliance_member` WHERE `player_id` IN (' . implode(', ', $deleted_player_ids) . ') AND `server_id` = \'' . $server_id . '\';';
+            DB::getConn()->query($query);
+            $query = 'DELETE FROM `player` WHERE `id` IN (' . implode(', ', $deleted_player_ids) . ') AND `server_id` = \'' . $server_id . '\';';
+            DB::getConn()->query($query);
         }
     }
 

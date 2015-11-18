@@ -6,7 +6,7 @@ class AllianceMemberUpdater extends Updater
 {
     public static function clean($server_id, $last_update)
     {
-        \ChrKo\DB::getConn()->query("DELETE FROM `alliance_member` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
+        DB::getConn()->query("DELETE FROM `alliance_member` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
     }
 
     protected function getQueryStart()
