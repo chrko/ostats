@@ -88,14 +88,16 @@ class Scheduler
                 $task = $result->fetch_assoc();
                 $result->close();
                 $db->query('UPDATE `tasks` SET `running` = 1 WHERE `id` = ' . $task['id']);
+                if ($db->affected_rows != 1) {
+                    echo '?!? ', $db->affected_rows, ' rows affected', "\n";
+                    echo $db->error, "\n";
+                    continue;
+                };
                 if (!($db->commit() && $db->autocommit(true))) {
                     echo 'Unable to commit or enable autocommit, try rollback';
                     $db->rollback();
                     continue;
                 }
-                if ($db->affected_rows != 1) {
-                    echo '?!? ', $db->affected_rows, ' rows affected';
-                };
 
                 $serverBase = getServerBaseById($task['server_id']);
 
