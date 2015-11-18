@@ -30,6 +30,4 @@ if ($resultDelayedTime->num_rows == 1) {
     $delayedTime = $result[0] != 'NULL' ? (time() - strtotime($result[0])) : 0;
 }
 
-$delayedTime = $delayedTime < 0 ? 0 : $delayedTime;
-
-echo 'Delay time ', date('H:i:s', $delayedTime), "\n";
+echo 'Delay time ', $delayedTime <= 0 ? '00:00:00' : date('H:i:s', $delayedTime), "\n";
