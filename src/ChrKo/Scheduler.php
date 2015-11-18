@@ -60,6 +60,8 @@ class Scheduler
                 $memory_limit *= 1024;
         }
 
+        $concurrentIdleTime = 0;
+
         while (($mem_usage = memory_get_usage()) < $memory_limit - 20 * 1024 ** 2) {
             #echo 'Memory Usage: ', number_format($mem_usage / 1024, 2), "KiB\n";
             echo DB::formatTimestamp(), ' ';
@@ -71,14 +73,29 @@ class Scheduler
 
             $db = DB::getConn();
 
+            if (!$db->autocommit(false) || !$db->begin_transaction()) {
+                echo 'Cannot disable autocommit or start transaction...';
+                sleep(60);
+                continue;
+            }
+
             $result = $db->query(
                 'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . ' \'ORDER BY `due_time` ASC LIMIT 1;'
             );
 
             if ($result->num_rows == 1) {
+                $concurrentIdleTime = 0;
                 $task = $result->fetch_assoc();
                 $result->close();
                 $db->query('UPDATE `tasks` SET `running` = 1 WHERE `id` = ' . $task['id']);
+                if (!($db->commit() && $db->autocommit(true))) {
+                    echo 'Unable to commit or enable autocommit, try rollback';
+                    $db->rollback();
+                    continue;
+                }
+                if ($db->affected_rows != 1) {
+                    echo '?!? ', $db->affected_rows, ' rows affected';
+                };
 
                 $serverBase = getServerBaseById($task['server_id']);
 
@@ -93,12 +110,16 @@ class Scheduler
                     case 'players':
                         $playerData = readPlayerData($serverBase);
                         bulkUpdatePlayerData($playerData);
+                        PlayerUpdater::clean($playerData['server_id'], $playerData['last_update']);
                         bulkUpdateAllianceMemberByPlayerData($playerData);
+                        AllianceMemberUpdater::clean($playerData['server_id'], $playerData['last_update']);
                         break;
                     case 'alliances':
                         $allianceData = readAllianceData($serverBase);
                         bulkUpdateAllianceData($allianceData);
+                        AllianceUpdater::clean($allianceData['server_id'], $allianceData['last_update']);
                         bulkUpdateAllianceMemberByAllianceData($allianceData);
+                        AllianceMemberUpdater::clean($allianceData['server_id'], $allianceData['last_update']);
                         break;
                     case 'universe':
                         bulkUpdateUniverse($serverBase);
@@ -116,6 +137,8 @@ class Scheduler
                 $db->query('DELETE FROM `tasks` WHERE `id` = ' . $task['id']);
             } else {
                 $result->close();
+                $db->rollback();
+                $db->autocommit(true);
                 $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ORDER BY `due_time` ASC LIMIT 1');
                 $timeToSleep = 30;
                 if ($result->num_rows == 1) {
@@ -125,6 +148,7 @@ class Scheduler
                 $result->close();
                 echo "Nothing to do for ${timeToSleep} seconds...\n";
 
+                $concurrentIdleTime += $timeToSleep;
                 sleep($timeToSleep);
             }
         }

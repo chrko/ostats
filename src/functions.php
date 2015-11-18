@@ -213,9 +213,6 @@ function bulkUpdatePlayerData($playerData)
     }
 
     $updater->finish();
-
-    $updater->clean($playerData['server_id'], $playerData['last_update']);
-
 }
 
 function bulkUpdateAllianceData($allianceData)
@@ -253,7 +250,6 @@ function bulkUpdateAllianceData($allianceData)
     }
 
     $updater->finish();
-
 }
 
 function bulkUpdateAllianceMemberByAllianceData($allianceData)
