@@ -2,13 +2,13 @@
 
 require_once('bootstrap.php');
 
-$result = \ChrKo\DB::getConn()->query('SELECT MAX(`due_time`) FROM `tasks` WHERE `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\'');
+$result = \ChrKo\DB::getConn()->query('SELECT COUNT(*) FROM `tasks` WHERE `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\'');
 
-$delay = 0;
+$delayedTasks = 0;
 
 if ($result->num_rows == 1) {
-    $delay = strtotime($result->fetch_array()[0]) - time();
+    $delay = $result->fetch_array()[0];
 }
-$delay = $delay < 0 ? 0 : $delay;
+$delayedTasks = $delayedTasks < 0 ? 0 : $delayedTasks;
 
-echo 'Delay: ' .date('H:i:s', $delay), "\n";
+echo 'Delay tasks ', $delayedTasks, "\n";
