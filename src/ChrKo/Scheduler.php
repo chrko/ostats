@@ -104,7 +104,7 @@ class Scheduler
                 $task['delay'] = date('H:i:s', time() - strtotime($task['due_time']));
 
                 echo DB::namedReplace(
-                    'Starting task :endpoint on server :server_id (:category, :type) due :due_time, :delay' . "\n",
+                    'Starting task :endpoint on server :server_id (:category, :type) due :due_time, :delay...',
                     $task
                 );
 
@@ -137,6 +137,8 @@ class Scheduler
                         throw new \Exception('unknown endpoint ' . $task['endpoint']);
                 }
                 $db->query('DELETE FROM `tasks` WHERE `id` = ' . $task['id']);
+
+                echo 'finished task', "\n";
             } else {
                 $result->close();
                 $db->rollback();
