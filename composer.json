@@ -1,0 +1,21 @@
+{
+  "name": "chrko/ogame-data-collector",
+  "description": "",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "author's name",
+      "email": "email@example.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "ChrKo\\": "src/ChrKo"
+    },
+    "files": [
+      "config.php",
+      "src/functions.php"
+    ]
+  }
+}
