@@ -46,6 +46,7 @@ if ($argc == 2) {
     ];
 
     foreach ($server_ids as $server_id) {
+        showMemUsage();
         $startServerBase[] = getServerBaseById($server_id);
     }
 }
@@ -54,7 +55,7 @@ if ($argc == 2) {
 $serverBases = array();
 
 foreach ($startServerBase as $startBase) {
-
+    showMemUsage();
     $xml = new XMLReaderProxy();
     $xml->open($startBase . '/api/universes.xml');
 
@@ -78,6 +79,7 @@ $serverBases = array_unique($serverBases);
 //$serverBases = ['http://s127-de.ogame.gameforge.com',];
 
 foreach ($serverBases as $serverBase) {
+    showMemUsage();
     $allianceData = readAllianceData($serverBase);
     echo $allianceData['server_id'], "\n";
     $playerData = readPlayerData($serverBase);

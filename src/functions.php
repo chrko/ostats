@@ -2,6 +2,25 @@
 
 use ChrKo\XMLReaderProxy;
 
+function showMemUsage()
+{
+    $memory_limit = ini_get('memory_limit');
+    $memory_limit = trim($memory_limit);
+    $last = strtolower($memory_limit[strlen($memory_limit) - 1]);
+    switch ($last) {
+        case 'g':
+            $memory_limit *= 1024;
+        case 'm':
+            $memory_limit *= 1024;
+        case 'k':
+            $memory_limit *= 1024;
+    }
+
+    $mem_usage = memory_get_usage();
+
+    echo 'Memory Usage: ', number_format($mem_usage / 1024, 2), 'KiB | ' . number_format($mem_usage / $memory_limit * 100, 2) . "%\n";
+}
+
 function signals()
 {
     return [
