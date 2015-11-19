@@ -119,38 +119,48 @@ class Scheduler
                     'task :endpoint on server :server_id (:category, :type) due :due_time, :delay...',
                     $task
                 );
+                try {
+                    switch ($task['endpoint']) {
+                        case 'players':
+                            $playerData = readPlayerData($serverBase);
+                            bulkUpdatePlayerData($playerData);
+                            PlayerUpdater::clean($playerData['server_id'], $playerData['last_update']);
+                            bulkUpdateAllianceMemberByPlayerData($playerData);
+                            AllianceMemberUpdater::clean($playerData['server_id'], $playerData['last_update']);
+                            break;
+                        case 'alliances':
+                            $allianceData = readAllianceData($serverBase);
+                            bulkUpdateAllianceData($allianceData);
+                            AllianceUpdater::clean($allianceData['server_id'], $allianceData['last_update']);
+                            bulkUpdateAllianceMemberByAllianceData($allianceData);
+                            AllianceMemberUpdater::clean($allianceData['server_id'], $allianceData['last_update']);
+                            break;
+                        case 'universe':
+                            bulkUpdateUniverse($serverBase);
+                            break;
+                        case 'highscore':
+                            bulkUpdateHighscore(
+                                $serverBase,
+                                [$task['category']],
+                                [$task['type']]
+                            );
+                            break;
+                        default:
+                            throw new \Exception('unknown endpoint ' . $task['endpoint']);
+                    }
+                    $db->query('DELETE FROM `tasks` WHERE `id` = ' . $task['id']);
+                    echo ' finished', "\n";
+                } catch (\Exception $e) {
+                    echo ' Exception occured:', "\n";
+                    echo 'Line: ', $e->getLine(), ' ';
+                    echo 'Message: ', $e->getMessage(), "\n";
 
-                switch ($task['endpoint']) {
-                    case 'players':
-                        $playerData = readPlayerData($serverBase);
-                        bulkUpdatePlayerData($playerData);
-                        PlayerUpdater::clean($playerData['server_id'], $playerData['last_update']);
-                        bulkUpdateAllianceMemberByPlayerData($playerData);
-                        AllianceMemberUpdater::clean($playerData['server_id'], $playerData['last_update']);
-                        break;
-                    case 'alliances':
-                        $allianceData = readAllianceData($serverBase);
-                        bulkUpdateAllianceData($allianceData);
-                        AllianceUpdater::clean($allianceData['server_id'], $allianceData['last_update']);
-                        bulkUpdateAllianceMemberByAllianceData($allianceData);
-                        AllianceMemberUpdater::clean($allianceData['server_id'], $allianceData['last_update']);
-                        break;
-                    case 'universe':
-                        bulkUpdateUniverse($serverBase);
-                        break;
-                    case 'highscore':
-                        bulkUpdateHighscore(
-                            $serverBase,
-                            [$task['category']],
-                            [$task['type']]
-                        );
-                        break;
-                    default:
-                        throw new \Exception('unknown endpoint ' . $task['endpoint']);
+                    $db->query(
+                        'UPDATE `tasks` SET `running` = 0, `due_time` = \''
+                        . DB::formatTimestamp(strtotime($task['due_time']) + 60 * 10)
+                        . '\' WHERE `id` = ' . $task['id']
+                    );
                 }
-                $db->query('DELETE FROM `tasks` WHERE `id` = ' . $task['id']);
-
-                echo 'finished', "\n";
             } else {
                 $result->close();
                 $db->query('UNLOCK TABLES;');
