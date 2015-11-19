@@ -42,7 +42,7 @@ class DB extends \mysqli
     {
         $result = parent::query($query, $resultmode);
 
-        if ($this->errno != 0) {
+        if ($this->errno) {
             echo "Query failed\n";
             file_put_contents('failed_queries.sql', $this->error, FILE_APPEND);
             file_put_contents('failed_queries.sql', $this->errno, FILE_APPEND);
