@@ -41,7 +41,6 @@ abstract class Updater implements UpdaterInterface
         $this->db->query($this->query);
         if ($this->db->errno) {
             echo $this->db->error, "\n";
-            echo $this->query, "\n";
         }
         $this->query = $this->getQueryStart();
     }
