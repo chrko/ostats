@@ -62,6 +62,7 @@ class Scheduler
             $whereType .= ') ';
             unset($tmp);
         }
+        $whereTypeSave = $whereType;
         unset($types);
 
         declare(ticks = 1);
@@ -110,6 +111,8 @@ class Scheduler
             );
 
             if ($result->num_rows == 1) {
+                $whereType = $whereTypeSave;
+
                 $concurrentIdleTime = 0;
                 $task = $result->fetch_assoc();
                 $result->close();
@@ -181,8 +184,8 @@ class Scheduler
                 $db->autocommit(true);
                 $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ' . $whereType . ' ORDER BY `due_time` ASC LIMIT 1');
 
-                $timeToSleepMin = 30;
-                $timeToSleepMax = 600;
+                $timeToSleepMin = !defined('MIN_SLEEP_TIME') ? 30 : MIN_SLEEP_TIME;
+                $timeToSleepMax = !defined('MAX_SLEEP_TIME') ? 600 : MAX_SLEEP_TIME;
 
                 $timeToSleep = $timeToSleepMin;
                 if ($result->num_rows == 1) {
@@ -195,6 +198,11 @@ class Scheduler
 
                 $result->close();
                 echo "Nothing to do for ${timeToSleep} seconds...\n";
+
+                if ($timeToSleep == $timeToSleepMax && $whereType != '') {
+                    $whereType = '';
+                    continue;
+                }
 
                 $concurrentIdleTime += $timeToSleep;
                 sleep($timeToSleep);

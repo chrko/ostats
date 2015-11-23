@@ -4,3 +4,6 @@ define('DB_HOST', 'localhost');
 define('DB_USER', 'user');
 define('DB_PASS', 'pass');
 define('DB_NAME', 'o_collector');
+
+define('MIN_SLEEP_TIME', 10);
+define('MAX_SLEEP_TIME', 60);
