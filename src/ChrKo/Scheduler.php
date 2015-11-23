@@ -88,8 +88,9 @@ class Scheduler
         $concurrentIdleTime = 0;
 
         while (($mem_usage = memory_get_usage()) < $memory_limit - 20 * 1024 ** 2) {
-            #echo 'Memory Usage: ', number_format($mem_usage / 1024, 2), "KiB\n";
-            echo DB::formatTimestamp(), ' ';
+            if ($whereTypeSave == $whereType) {
+                echo DB::formatTimestamp(), ' ';
+            }
             if (self::$end) {
                 echo 'Memory Usage: ', number_format($mem_usage / 1024, 2), "KiB\n";
                 echo 'Received signal to end.', "\n";
@@ -182,7 +183,7 @@ class Scheduler
                 $result->close();
                 $db->query('UNLOCK TABLES;');
                 $db->autocommit(true);
-                $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ' . $whereType . ' ORDER BY `due_time` ASC LIMIT 1');
+                $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ' . $whereTypeSave . ' ORDER BY `due_time` ASC LIMIT 1');
 
                 $timeToSleepMin = !defined('MIN_SLEEP_TIME') ? 30 : MIN_SLEEP_TIME;
                 $timeToSleepMax = !defined('MAX_SLEEP_TIME') ? 600 : MAX_SLEEP_TIME;
