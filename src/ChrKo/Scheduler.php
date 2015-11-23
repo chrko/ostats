@@ -197,13 +197,12 @@ class Scheduler
                 $timeToSleep = $timeToSleep < $timeToSleepMin ? $timeToSleepMin : $timeToSleep;
 
                 $result->close();
-                echo "Nothing to do for ${timeToSleep} seconds...\n";
-
                 if ($timeToSleep == $timeToSleepMax && $whereType != '') {
                     $whereType = '';
                     continue;
                 }
 
+                echo "Nothing to do for ${timeToSleep} seconds...\n";
                 $concurrentIdleTime += $timeToSleep;
                 sleep($timeToSleep);
             }
