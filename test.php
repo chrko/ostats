@@ -44,6 +44,7 @@ $serverBases = array_unique($serverBases);
 //$serverBases = ['http://s127-de.ogame.gameforge.com',];
 
 $counter = 0;
+$avg_job_time = 2;
 
 foreach ($serverBases as $serverBase) {
     echo date('H:i:s ', time() - $start);
@@ -53,7 +54,7 @@ foreach ($serverBases as $serverBase) {
     foreach (Scheduler::getAllowedEndpoints() as $endpoint) {
         if ($endpoint != 'highscore') {
             Scheduler::schedule(
-                \ChrKo\DB::formatTimestamp(time() + $counter * 2),
+                \ChrKo\DB::formatTimestamp(time() + $counter * $avg_job_time),
                 $allianceData['server_id'],
                 $endpoint
             );
@@ -62,7 +63,7 @@ foreach ($serverBases as $serverBase) {
             foreach (['1', '2'] as $category) {
                 foreach (range(0, 7) as $type) {
                     Scheduler::schedule(
-                        \ChrKo\DB::formatTimestamp(time() + $counter * 2),
+                        \ChrKo\DB::formatTimestamp(time() + $counter * $avg_job_time),
                         $allianceData['server_id'],
                         $endpoint,
                         $category,

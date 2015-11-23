@@ -48,8 +48,22 @@ class Scheduler
         DB::getConn()->query($query);
     }
 
-    public static function work()
+    public static function work($types = null)
     {
+        $whereType = '';
+        if (is_array($types) && count($types) > 0) {
+            $whereType .= ' AND (';
+            $tmp = '';
+            foreach ($types as $type) {
+                $type = DB::getConn()->real_escape_string($type);
+                $tmp .= " OR `endpoint` = '${type}'";
+            }
+            $whereType .= substr($tmp, 4);
+            $whereType .= ') ';
+            unset($tmp);
+        }
+        unset($types);
+
         declare(ticks = 1);
 
         $signals = signals();
@@ -92,7 +106,7 @@ class Scheduler
             $db->query('LOCK TABLES `tasks` WRITE;');
 
             $result = $db->query(
-                'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . ' \'ORDER BY `due_time` ASC LIMIT 1;'
+                'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . '\' ' . $whereType . 'ORDER BY `due_time` ASC LIMIT 1;'
             );
 
             if ($result->num_rows == 1) {
@@ -165,7 +179,7 @@ class Scheduler
                 $result->close();
                 $db->query('UNLOCK TABLES;');
                 $db->autocommit(true);
-                $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ORDER BY `due_time` ASC LIMIT 1');
+                $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ' . $whereType . ' ORDER BY `due_time` ASC LIMIT 1');
 
                 $timeToSleepMin = 30;
                 $timeToSleepMax = 600;
