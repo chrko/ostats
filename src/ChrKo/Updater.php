@@ -23,6 +23,10 @@ abstract class Updater implements UpdaterInterface
 
     public function run($data)
     {
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->db->real_escape_string($value);
+        }
+
         $this->query .= DB::namedReplace($this->getQueryPart(), $data);
         $this->counter++;
 
