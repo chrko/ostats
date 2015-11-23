@@ -2,33 +2,66 @@
 
 require_once('bootstrap.php');
 
-$resultTotalTasks = \ChrKo\DB::getConn()->query('SELECT COUNT(*) FROM `tasks`');
-$resultDelayedTasks = \ChrKo\DB::getConn()->query('SELECT COUNT(*) FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\'');
-$resultDelayedTime = \ChrKo\DB::getConn()->query('SELECT MIN(`due_time`) FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\'');
+$resultTotalTasks = \ChrKo\DB::getConn()->query('SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` GROUP BY `endpoint`');
+$resultDelayedTasks = \ChrKo\DB::getConn()->query('SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\' GROUP BY `endpoint`');
+$resultDelayedTime = \ChrKo\DB::getConn()->query('SELECT MIN(`due_time`) AS `count`, `endpoint` FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\' GROUP BY `endpoint`');
 
-$totalTasks = 1;
-$delayedTasks = 0;
-$delayedTime = 0;
+$buffer = [];
+$totalTasksEndpoint = [];
 
-if ($resultTotalTasks->num_rows == 1) {
-    $totalTasks = $resultTotalTasks->fetch_array()[0];
+function output($result, $buffer, $stringFormat)
+{
+    $total = 0;
+    while ($row = $result->fetch_assoc()) {
+        extract($row);
+        $total += (int)$count;
+        if (!array_key_exists($endpoint, $buffer)) {
+            $buffer[$endpoint] = '';
+        }
+        $buffer[$endpoint] .= $stringFormat($count, $endpoint);
+    }
+    return [$total, $buffer, 'total' => $total, 'buffer' => $buffer];
 }
 
-$totalTasks = $totalTasks < 1 ? 1 : $totalTasks;
+list($totalTasks, $buffer) = output(
+    $resultTotalTasks,
+    $buffer,
+    function ($count, $endpoint) use (&$totalTasksEndpoint) {
+        $totalTasksEndpoint[$endpoint] = (int)$count;
+        return 'Total tasks for endpoint "' . $endpoint . '": ' . $count . "\n";
+    }
+);
 
-echo 'Total tasks ', $totalTasks, "\n";
+list($totalDelayedTasks, $buffer) = output(
+    $resultDelayedTasks,
+    $buffer,
+    function ($count, $endpoint) use ($totalTasksEndpoint) {
+        return 'Delayed tasks for endpoint "' . $endpoint . '": ' . $count . ' | ' . number_format(((int)$count) / $totalTasksEndpoint[$endpoint] * 100, 2) . "%\n";
+    }
+);
 
-if ($resultDelayedTasks->num_rows == 1) {
-    $delayedTasks = (int)$resultDelayedTasks->fetch_array()[0];
+$totalDelayedTime = -1;
+list($tmp, $buffer) = output(
+    $resultDelayedTime,
+    $buffer,
+    function ($count, $endpoint) use ($totalTasksEndpoint, &$totalDelayedTime) {
+        $timestamp = strtotime($count);
+        if ($totalDelayedTime < 0) {
+            $totalDelayedTime = $timestamp;
+        } else {
+            $totalDelayedTime = $totalDelayedTime < $timestamp ? $totalDelayedTime : $timestamp;
+        }
+        return 'Delay time for endpoint "' . $endpoint . '": ' . date('H:i:s', time() - $timestamp) . "\n";
+    }
+);
+
+echo 'Total tasks: ' . $totalTasks . "\n";
+echo 'Delayed tasks: ' . $totalDelayedTasks . ' | ' . number_format(((int)$totalDelayedTasks) / $totalTasks * 100, 2) . "%\n";
+echo 'Delay time: ' . date('H:i:s', time() - $totalDelayedTime) . "\n";
+echo "\n";
+
+if($argc > 1) {
+    foreach ($buffer as $line) {
+        echo $line, "\n";
+    }
 }
-
-$delayedTasks = $delayedTasks < 0 ? 0 : $delayedTasks;
-
-echo 'Delayed tasks ', $delayedTasks, ' | ', number_format($delayedTasks / $totalTasks * 100, 2), "%\n";
-
-if ($resultDelayedTime->num_rows == 1) {
-    $result = $resultDelayedTime->fetch_array();
-    $delayedTime = $result[0] != null ? (time() - strtotime($result[0])) : 0;
-}
-
-echo 'Delay time ', $delayedTime <= 0 ? '00:00:00' : date('H:i:s', $delayedTime), "\n";
