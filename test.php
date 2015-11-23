@@ -53,7 +53,7 @@ foreach ($serverBases as $serverBase) {
     foreach (Scheduler::getAllowedEndpoints() as $endpoint) {
         if ($endpoint != 'highscore') {
             Scheduler::schedule(
-                \ChrKo\DB::formatTimestamp(),
+                \ChrKo\DB::formatTimestamp(time() + $counter * 2),
                 $allianceData['server_id'],
                 $endpoint
             );
@@ -62,7 +62,7 @@ foreach ($serverBases as $serverBase) {
             foreach (['1', '2'] as $category) {
                 foreach (range(0, 7) as $type) {
                     Scheduler::schedule(
-                        \ChrKo\DB::formatTimestamp(),
+                        \ChrKo\DB::formatTimestamp(time() + $counter * 2),
                         $allianceData['server_id'],
                         $endpoint,
                         $category,
