@@ -40,27 +40,23 @@ list($totalDelayedTasks, $buffer) = output(
     }
 );
 
-$totalDelayedTime = -1;
+$totalDelayedTime = time();
 list($tmp, $buffer) = output(
     $resultDelayedTime,
     $buffer,
     function ($count, $endpoint) use ($totalTasksEndpoint, &$totalDelayedTime) {
         $timestamp = strtotime($count);
-        if ($totalDelayedTime < 0) {
-            $totalDelayedTime = $timestamp;
-        } else {
-            $totalDelayedTime = $totalDelayedTime < $timestamp ? $totalDelayedTime : $timestamp;
-        }
+        $totalDelayedTime = $totalDelayedTime < $timestamp ? $totalDelayedTime : $timestamp;
         return 'Delay time for endpoint "' . $endpoint . '": ' . date('H:i:s', time() - $timestamp) . "\n";
     }
 );
 
 echo 'Total tasks: ' . $totalTasks . "\n";
-echo 'Delayed tasks: ' . $totalDelayedTasks . ' | ' . number_format(((int)$totalDelayedTasks) / $totalTasks * 100, 2) . "%\n";
+echo 'Delayed tasks: ' . $totalDelayedTasks . ' | ' . @number_format(((int)$totalDelayedTasks) / $totalTasks * 100, 2) . "%\n";
 echo 'Delay time: ' . date('H:i:s', time() - $totalDelayedTime) . "\n";
 echo "\n";
 
-if($argc > 1) {
+if ($argc > 1) {
     foreach ($buffer as $line) {
         echo $line, "\n";
     }
