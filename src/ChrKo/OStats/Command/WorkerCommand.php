@@ -64,7 +64,7 @@ class WorkerCommand extends Command
             $tmp = '';
             foreach ($types as $type) {
                 $type = DB::getConn()->real_escape_string($type);
-                $tmp .= " OR `endpoint` = '${type}'";
+                $tmp .= " OR `type` = '${type}'";
             }
             $whereRestriction .= substr($tmp, 4);
             $whereRestriction .= ') ';
