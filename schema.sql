@@ -125,6 +125,17 @@ CREATE TABLE `player_log_name` (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
+DROP TABLE IF EXISTS `player_log_vacation`;
+CREATE TABLE `player_log_vacation` (
+  `server_id` VARCHAR(10)      NOT NULL,
+  `id`        INT(10) UNSIGNED NOT NULL,
+  `seen`      TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `vacation`  TINYINT(1)       NOT NULL,
+  PRIMARY KEY (`server_id`, `id`, `seen`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 DROP TABLE IF EXISTS `alliance_member`;
 CREATE TABLE `alliance_member` (
   `server_id`   VARCHAR(10)      NOT NULL,
@@ -384,6 +395,16 @@ FOR EACH ROW BEGIN
       NEW.`name`
     );
   END IF;
+
+  IF OLD.`vacation` <> NEW.`vacation`
+  THEN
+    INSERT IGNORE INTO `player_log_vacation` VALUES (
+      NEW.`server_id`,
+      NEW.`id`,
+      NEW.`last_update`,
+      NEW.`vacation`
+    );
+  END IF;
 END $$
 DELIMITER ;
 
@@ -404,6 +425,24 @@ CREATE TABLE `planet_overall` (
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
+
+
+DROP TABLE IF EXISTS `planet_relocation`;
+CREATE TABLE `planet_relocation` (
+  `server_id`    VARCHAR(10)          NOT NULL,
+  `id`           INT(10) UNSIGNED     NOT NULL,
+  `seen`         TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `old_galaxy`   TINYINT(2) UNSIGNED  NOT NULL,
+  `old_system`   SMALLINT(3) UNSIGNED NOT NULL,
+  `old_position` TINYINT(2) UNSIGNED  NOT NULL,
+  `new_galaxy`   TINYINT(2) UNSIGNED  NOT NULL,
+  `new_system`   SMALLINT(3) UNSIGNED NOT NULL,
+  `new_position` TINYINT(2) UNSIGNED  NOT NULL,
+  PRIMARY KEY (`server_id`, `id`, `seen`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 
 DROP TRIGGER IF EXISTS `planet_insert`;
 CREATE TRIGGER `planet_insert` AFTER INSERT ON `planet`
@@ -426,24 +465,45 @@ ON DUPLICATE KEY UPDATE
   `last_seen` = NULL;
 
 DROP TRIGGER IF EXISTS `planet_update`;
+DELIMITER $$
 CREATE TRIGGER `planet_update` AFTER UPDATE ON `planet`
-FOR EACH ROW INSERT INTO `planet_overall` VALUES (
-  NEW.`server_id`,
-  NEW.`id`,
-  NEW.`name`,
-  NEW.`galaxy`,
-  NEW.`system`,
-  NEW.`position`,
-  NEW.`player_id`,
-  NEW.`first_seen`,
-  NULL
-)
-ON DUPLICATE KEY UPDATE
-  `name`      = NEW.`name`,
-  `galaxy`    = NEW.`galaxy`,
-  `system`    = NEW.`system`,
-  `position`  = NEW.`position`,
-  `last_seen` = NULL;
+FOR EACH ROW BEGIN
+  INSERT INTO `planet_overall` VALUES (
+    NEW.`server_id`,
+    NEW.`id`,
+    NEW.`name`,
+    NEW.`galaxy`,
+    NEW.`system`,
+    NEW.`position`,
+    NEW.`player_id`,
+    NEW.`first_seen`,
+    NULL
+  )
+  ON DUPLICATE KEY UPDATE
+    `name`      = NEW.`name`,
+    `galaxy`    = NEW.`galaxy`,
+    `system`    = NEW.`system`,
+    `position`  = NEW.`position`,
+    `last_seen` = NULL;
+
+  IF OLD.`galaxy` <> NEW.`galaxy`
+     OR OLD.`system` <> NEW.`system`
+     OR OLD.`position` <> NEW.`position`
+  THEN
+    INSERT IGNORE INTO `planet_relocation` VALUES (
+      NEW.`server_id`,
+      NEW.`id`,
+      NEW.`last_update`,
+      OLD.`galaxy`,
+      OLD.`system`,
+      OLD.`position`,
+      NEW.`galaxy`,
+      NEW.`system`,
+      NEW.`position`
+    );
+  END IF;
+END $$
+DELIMITER ;
 
 DROP TRIGGER IF EXISTS `planet_delete`;
 CREATE TRIGGER `planet_delete` AFTER DELETE ON `planet`

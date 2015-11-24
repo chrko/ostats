@@ -357,7 +357,7 @@ class XmlApi
 
         $this->flushBulkQueries();
 
-        $this->bulkQueries['player']->clean($serverId, $lastUpdate);
+        $this->bulkQueries['alliance']->clean($serverId, $lastUpdate);
         $this->bulkQueries['member']->clean($serverId, $lastUpdate);
     }
 

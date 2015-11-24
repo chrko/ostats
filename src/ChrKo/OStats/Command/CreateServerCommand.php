@@ -25,6 +25,28 @@ class CreateServerCommand extends Command
                 'full-country',
                 'f',
                 InputOption::VALUE_NONE
+            )
+            ->addOption(
+                'endpoint',
+                null,
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL
+            )
+            ->addOption(
+                'category',
+                null,
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL
+            )
+            ->addOption(
+                'type',
+                null,
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL
+            )
+            ->addOption(
+                'schedule-delay',
+                'd',
+                InputOption::VALUE_OPTIONAL,
+                '',
+                0
             );
     }
 
@@ -39,16 +61,28 @@ class CreateServerCommand extends Command
             }
         }
 
+        $serverIds = array_unique($serverIds);
+
         $count = 0;
-        $interval = 0;
+        $interval = $input->getOption('schedule-delay');
         $start = time();
 
         foreach ($serverIds as $serverId) {
             foreach (XmlApiUpdate::getAllowedArguments() as $endpoint => $details) {
+                if (count($input->getOption('endpoint')) > 0 && !in_array($endpoint, $input->getOption('endpoint'))) {
+                    continue;
+                }
+
                 $categories = $details['category'];
                 $types = $details['type'];
                 foreach ($categories as $category) {
+                    if (count($input->getOption('category')) > 0 && !in_array($category, $input->getOption('category'))) {
+                        continue;
+                    }
                     foreach ($types as $type) {
+                        if (count($input->getOption('type')) > 0 && !in_array($type, $input->getOption('type'))) {
+                            continue;
+                        }
                         (new XmlApiUpdate($serverId, $endpoint, $category, $type, $start + $count * $interval))->save();
                         $count++;
                     }

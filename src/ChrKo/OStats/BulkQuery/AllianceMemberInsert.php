@@ -21,6 +21,6 @@ class AllianceMemberInsert extends AbstractExecutor
 
     protected function getQueryEnd()
     {
-        return "\n" . 'ON DUPLICATE KEY UPDATE `last_update` = VALUES(`last_update`)';
+        return "\n" . ' ON DUPLICATE KEY UPDATE `last_update` = VALUES(`last_update`) ';
     }
 }
