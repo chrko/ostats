@@ -1,15 +1,13 @@
 <?php
 
-namespace ChrKo;
+namespace ChrKo\OStats\BulkQuery;
 
 
-class PlanetUpdater extends Updater
+class PlanetInsert extends AbstractExecutor
 {
-    protected $size = 2000;
-
-    public static function clean($server_id, $last_update)
+    public function clean($server_id, $last_update)
     {
-        // TODO: Implement clean() method.
+        $this->dbConn->query("DELETE FROM `planet` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
     }
 
     protected function getQueryStart()

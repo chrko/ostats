@@ -206,12 +206,12 @@ CREATE TABLE `moon` (
 
 DROP TABLE IF EXISTS `highscore_alliance`;
 CREATE TABLE `highscore_alliance` (
-  `server_id`   VARCHAR(10)                           NOT NULL,
-  `type`        TINYINT                               NOT NULL,
-  `alliance_id` INT       UNSIGNED                    NOT NULL,
-  `points`      BIGINT    UNSIGNED                    NOT NULL,
-  `seen`        TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `type`, `alliance_id`, `points`)
+  `server_id` VARCHAR(10)                           NOT NULL,
+  `id`        INT       UNSIGNED                    NOT NULL,
+  `type`      TINYINT                               NOT NULL,
+  `points`    BIGINT    UNSIGNED                    NOT NULL,
+  `seen`      TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`server_id`, `id`, `type`, `points`, `seen`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -219,11 +219,11 @@ CREATE TABLE `highscore_alliance` (
 DROP TABLE IF EXISTS `highscore_player`;
 CREATE TABLE `highscore_player` (
   `server_id` VARCHAR(10)                           NOT NULL,
+  `id`        INT       UNSIGNED                    NOT NULL,
   `type`      TINYINT                               NOT NULL,
-  `player_id` INT       UNSIGNED                    NOT NULL,
   `points`    BIGINT    UNSIGNED                    NOT NULL,
   `seen`      TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `type`, `player_id`, `points`)
+  PRIMARY KEY (`server_id`, `id`, `type`, `points`, `seen`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -535,6 +535,7 @@ CREATE TABLE `tasks` (
   `endpoint`  VARCHAR(20)         NOT NULL,
   `category`  TINYINT(1) UNSIGNED NOT NULL     DEFAULT 0,
   `type`      TINYINT(1) UNSIGNED NOT NULL     DEFAULT 0,
+  `job`       BLOB                NOT NULL,
   `running`   TINYINT(1) UNSIGNED              DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `job_type` (`server_id`, `endpoint`, `category`, `type`)

@@ -1,12 +1,12 @@
 <?php
 
-namespace ChrKo;
+namespace ChrKo\OStats\BulkQuery;
 
-class AllianceMemberUpdater extends Updater
+class AllianceMemberInsert extends AbstractExecutor
 {
-    public static function clean($server_id, $last_update)
+    public function clean($server_id, $last_update)
     {
-        DB::getConn()->query("DELETE FROM `alliance_member` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
+        $this->dbConn->query("DELETE FROM `alliance_member` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
     }
 
     protected function getQueryStart()

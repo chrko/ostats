@@ -1,10 +1,10 @@
 <?php
 
-require_once('bootstrap.php');
+require_once('vendor/autoload.php');
 
-$resultTotalTasks = \ChrKo\DB::getConn()->query('SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` GROUP BY `endpoint`');
-$resultDelayedTasks = \ChrKo\DB::getConn()->query('SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\' GROUP BY `endpoint`');
-$resultDelayedTime = \ChrKo\DB::getConn()->query('SELECT MIN(`due_time`) AS `count`, `endpoint` FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\DB::formatTimestamp() . '\' GROUP BY `endpoint`');
+$resultTotalTasks = \ChrKo\OStats\DB::getConn()->query('SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` GROUP BY `endpoint`');
+$resultDelayedTasks = \ChrKo\OStats\DB::getConn()->query('SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\' GROUP BY `endpoint`');
+$resultDelayedTime = \ChrKo\OStats\DB::getConn()->query('SELECT MIN(`due_time`) AS `count`, `endpoint` FROM `tasks` WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\' GROUP BY `endpoint`');
 
 $buffer = [];
 $totalTasksEndpoint = [];

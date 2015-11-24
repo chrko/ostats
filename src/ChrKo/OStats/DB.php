@@ -1,6 +1,6 @@
 <?php
 
-namespace ChrKo;
+namespace ChrKo\OStats;
 
 
 class DB extends \mysqli

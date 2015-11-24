@@ -1,15 +1,13 @@
 <?php
 
-namespace ChrKo;
+namespace ChrKo\OStats\BulkQuery;
 
 
-class MoonUpdater extends Updater
+class MoonInsert extends AbstractExecutor
 {
-    protected $size = 2000;
-
-    public static function clean($server_id, $last_update)
+    public function clean($server_id, $last_update)
     {
-        // TODO: Implement clean() method.
+        $this->dbConn->query("DELETE FROM `moon` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
     }
 
     protected function getQueryStart()
@@ -32,6 +30,6 @@ class MoonUpdater extends Updater
 
     protected function getQueryEnd()
     {
-        return 'ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);';
+        return 'ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `last_update` = VALUES(`last_update`);';
     }
 }

@@ -1,24 +1,26 @@
 <?php
 
-namespace ChrKo;
+namespace ChrKo\OStats\BulkQuery;
 
 
-class HighscoreUpdater extends Updater
+use ChrKo\OStats\DB;
+
+class HighscoreInsert extends AbstractExecutor
 {
-    protected $size = 2000;
+    protected $batchSize = 2000;
     protected $category;
 
-    public function __construct($category)
+    public function __construct(DB $dbConn,$category)
     {
         if (strpos($category, 'player') === false && strpos($category, 'alliance')) {
-            throw new \Exception('unknown type');
+            throw new \InvalidArgumentException;
         }
         $this->category = $category;
 
-        parent::__construct();
+        parent::__construct($dbConn);
     }
 
-    public static function clean($server_id, $last_update)
+    public function clean($server_id, $last_update)
     {
     }
 
@@ -27,7 +29,7 @@ class HighscoreUpdater extends Updater
         return
             'INSERT IGNORE INTO `highscore_' . $this->category . '`(
                 `server_id`,
-                `' . $this->category . '_id`,
+                `id`,
                 `type`,
                 `points`,
                 `seen`
@@ -37,11 +39,11 @@ class HighscoreUpdater extends Updater
     protected function getQueryPart()
     {
         return
-            '(:server_id, :' . $this->category . '_id, :type, :points, :seen),' . "\n";
+            '(:server_id, :id, :type, :points, :seen),' . "\n";
     }
 
     protected function getQueryEnd()
     {
-        return "\n" . 'ON DUPLICATE KEY UPDATE `seen` = VALUES(`seen`)';
+        return '';
     }
 }
