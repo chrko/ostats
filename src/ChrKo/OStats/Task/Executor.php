@@ -76,6 +76,7 @@ class Executor
                 if ($db->affected_rows != 1) {
                     echo '?!? ', $db->affected_rows, ' rows affected', "\n";
                     echo $db->error, "\n";
+                    $db->query('UNLOCK TABLES;');
                     continue;
                 };
 

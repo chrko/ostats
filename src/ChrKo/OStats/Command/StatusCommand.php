@@ -100,7 +100,7 @@ class StatusCommand extends Command
 
                     $output->write([
                         'Delay time: ',
-                        date('H:i:s', time() - $delayTime)
+                        date('H:i:s', time() - $delayTimePerEndpoint[$endpoint])
                     ]);
                     $output->writeln('');
                 }
