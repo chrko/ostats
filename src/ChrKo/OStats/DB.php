@@ -27,6 +27,9 @@ class DB extends \mysqli
     {
         if (!self::$dbConn || !self::$dbConn->ping()) {
             self::$dbConn = new self(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+            if(!self::$dbConn->set_charset('utf8mb4')){
+                throw new \Exception('cannot set utf8mb4 as connection character set');
+            }
         }
 
         return self::$dbConn;
