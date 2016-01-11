@@ -62,7 +62,7 @@ class Executor
             $db->query('LOCK TABLES `tasks` WRITE;');
 
             $result = $db->query(
-                'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . '\' ' . $where . 'ORDER BY `due_time` ASC LIMIT 1;'
+                'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . '\' ' . $where . 'ORDER BY `due_time` ASC, `id` ASC LIMIT 1;'
             );
 
             if ($result->num_rows == 1) {
