@@ -6,7 +6,7 @@ namespace ChrKo\OStats\Task;
 use ChrKo\OStats\DB;
 
 class Scheduler {
-    protected static $forceReschedule = false;
+    public static $forceReschedule = false;
 
     public static function queue(XmlApiUpdate $task) {
         $data = [

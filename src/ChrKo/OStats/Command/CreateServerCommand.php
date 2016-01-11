@@ -2,6 +2,7 @@
 
 namespace ChrKo\OStats\Command;
 
+use ChrKo\OStats\Task\Scheduler;
 use ChrKo\OStats\Task\XmlApiUpdate;
 use ChrKo\OStats\XmlApi;
 use Symfony\Component\Console\Command\Command;
@@ -24,6 +25,11 @@ class CreateServerCommand extends Command
             ->addOption(
                 'full-country',
                 'f',
+                InputOption::VALUE_NONE
+            )
+            ->addOption(
+                'force-queue',
+                null,
                 InputOption::VALUE_NONE
             )
             ->addOption(
@@ -59,6 +65,10 @@ class CreateServerCommand extends Command
             foreach ($tmpServerIds as $serverId) {
                 $serverIds = array_merge($serverIds, XmlApi::readLocalServers($serverId));
             }
+        }
+
+        if ($input->getOption('force-queue')) {
+            Scheduler::$forceReschedule = true;
         }
 
         $serverIds = array_unique($serverIds);
