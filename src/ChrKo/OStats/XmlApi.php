@@ -6,6 +6,7 @@ use ChrKo\XmlReaderProxy\Exceptions\UnknownElementException;
 use ChrKo\XmlReaderProxy\Exceptions\XmlReaderExecption;
 use ChrKo\XmlReaderProxy\XmlReader;
 use ChrKo\OStats\BulkQuery;
+use ChrKo\OStats\Task\XmlApiUpdate;
 
 class XmlApi
 {
@@ -21,8 +22,11 @@ class XmlApi
         $this->bulkQueries['member'] = new BulkQuery\AllianceMemberInsert(DB::getConn());
         $this->bulkQueries['player'] = new BulkQuery\PlayerInsert(DB::getConn());
 
-        $this->bulkQueries['highscore_1'] = new BulkQuery\HighscoreInsert(DB::getConn(), 'player');
-        $this->bulkQueries['highscore_2'] = new BulkQuery\HighscoreInsert(DB::getConn(), 'alliance');
+        foreach (XmlApiUpdate::getAllowedArguments()['highscore']['category'] as $category) {
+            foreach (XmlApiUpdate::getAllowedArguments()['highscore']['type'] as $type) {
+                $this->bulkQueries['highscore_' . $category . '_' . $type] = new BulkQuery\HighscoreInsert(DB::getConn(), $category, $type);
+            }
+        }
 
         $this->bulkQueries['planet'] = new BulkQuery\PlanetInsert(DB::getConn());
         $this->bulkQueries['moon'] = new BulkQuery\MoonInsert(DB::getConn());
@@ -71,7 +75,7 @@ class XmlApi
             $serverIds[] = self::getServerIdByBase($xml->getAttribute('href'));
         }
 
-        return $serverIds;;
+        return $serverIds;
     }
 
     public function flushBulkQueries()
@@ -91,7 +95,7 @@ class XmlApi
             throw new UnknownElementException('alliances', $xmlReader->name);
         }
 
-        $timestamp = (int)$xmlReader->getAttribute('timestamp');
+        $timestamp = (int) $xmlReader->getAttribute('timestamp');
         $lastUpdate = date('Y-m-d H:i:s', $timestamp);
 
         $alliances = [];
@@ -111,7 +115,7 @@ class XmlApi
                     $alliance['id'] = $xmlReader->getAttribute('id');
                     $alliance['name'] = $xmlReader->getAttribute('name');
                     $alliance['tag'] = $xmlReader->getAttribute('tag');
-                    $alliance['open'] = (bool)$xmlReader->getAttribute('open', false);
+                    $alliance['open'] = (bool) $xmlReader->getAttribute('open', false);
 
                     $alliance['homepage'] = $xmlReader->getAttribute('homepage', false);
                     $alliance['logo'] = $xmlReader->getAttribute('logo', false);
@@ -136,10 +140,13 @@ class XmlApi
 
     public function readHighscoreData($serverId, $category, $type)
     {
-        $category = (string)$category;
-        $type = (string)$type;
+        $category = (string) $category;
+        $type = (string) $type;
 
-        if (!in_array($category, ['1', '2']) || !in_array($type, ['0', '1', '2', '3', '4', '5', '6', '7',])) {
+        if (
+            !in_array($category, XmlApiUpdate::getAllowedArguments()['highscore']['category'])
+            || !in_array($type, XmlApiUpdate::getAllowedArguments()['highscore']['type'])
+        ) {
             throw new \Exception;
         }
 
@@ -160,7 +167,7 @@ class XmlApi
             throw new UnknownElementException('highscore', $xmlReader->name);
         }
 
-        $timestamp = (int)$xmlReader->getAttribute('timestamp');
+        $timestamp = (int) $xmlReader->getAttribute('timestamp');
         $lastUpdate = date('Y-m-d H:i:s', $timestamp);
 
         if (
@@ -178,9 +185,10 @@ class XmlApi
             }
             $row = [];
 
-            $row['id'] = (int)$xmlReader->getAttribute('id');
-            $row['points'] = (int)$xmlReader->getAttribute('score');
-            $row['position'] = (int)$xmlReader->getAttribute('position');
+            $row['id'] = (int) $xmlReader->getAttribute('id');
+            $row['points'] = (int) $xmlReader->getAttribute('score');
+            $row['position'] = (int) $xmlReader->getAttribute('position');
+            $row['ships'] = (int) $xmlReader->getAttribute('ships', 0);
 
             $highscore[] = $row;
         }
@@ -195,7 +203,7 @@ class XmlApi
         ];
     }
 
-    public function readPlayerData($serverId)
+    public function readPlayersData($serverId)
     {
         $xmlReader = new XmlReader();
         $xmlReader->open(self::getServerBaseById($serverId) . 'api/players.xml');
@@ -205,7 +213,7 @@ class XmlApi
             throw new UnknownElementException('players', $xmlReader->name);
         }
 
-        $timestamp = (int)$xmlReader->getAttribute('timestamp');
+        $timestamp = (int) $xmlReader->getAttribute('timestamp');
         $lastUpdate = date('Y-m-d H:i:s', $timestamp);
 
         $players = [];
@@ -252,7 +260,7 @@ class XmlApi
             throw new UnknownElementException('universe', $xmlReader->name);
         }
 
-        $timestamp = (int)$xmlReader->getAttribute('timestamp');
+        $timestamp = (int) $xmlReader->getAttribute('timestamp');
         $lastUpdate = date('Y-m-d H:i:s', $timestamp);
 
         $lastPlanetId = 0;
@@ -329,7 +337,7 @@ class XmlApi
                 case 'alliance_id':
                 case 'player_id':
                 case 'open':
-                    $value = (int)$value;
+                    $value = (int) $value;
                     break;
             }
         };
@@ -361,7 +369,7 @@ class XmlApi
         $this->bulkQueries['member']->clean($serverId, $lastUpdate);
     }
 
-    public function processPlayerData(array $playerData)
+    public function processPlayersData(array $playerData)
     {
         $serverId = $playerData['server_id'];
         $lastUpdate = $playerData['last_update'];
@@ -382,7 +390,7 @@ class XmlApi
                 case 'banned':
                 case 'outlaw':
                 case 'admin':
-                    $value = (int)$value;
+                    $value = (int) $value;
                     break;
             }
         };
@@ -415,17 +423,16 @@ class XmlApi
         $category = $highscoreData['category'];
         $type = $highscoreData['type'];
 
+        $bulkQuery = $this->bulkQueries['highscore_' . $category . '_' . $type];
+
         foreach ($highscoreData['highscore'] as $row) {
             $row['server_id'] = $serverId;
             $row['seen'] = $lastUpdate;
-            $row['type'] = $type;
 
-            $this->bulkQueries['highscore_' . $category]->run($row);
+            $bulkQuery->run($row);
         }
 
-        $this->flushBulkQueries();
-
-        $this->bulkQueries['highscore_' . $category]->clean($serverId, $lastUpdate);
+        $bulkQuery->finish()->clean($serverId, $lastUpdate);
     }
 
     public function processUniverseData(array $universeData)
@@ -446,7 +453,7 @@ class XmlApi
                 case 'position':
                 case 'player_id':
                 case 'size':
-                    $v = (int)$v;
+                    $v = (int) $v;
             }
         };
 

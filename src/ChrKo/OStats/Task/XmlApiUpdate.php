@@ -62,8 +62,8 @@ class XmlApiUpdate
                 $xmlApi->processAllianceData($data);
                 break;
             case 'players':
-                $data = $xmlApi->readPlayerData($this->serverId);
-                $xmlApi->processPlayerData($data);
+                $data = $xmlApi->readPlayersData($this->serverId);
+                $xmlApi->processPlayersData($data);
                 break;
             case 'highscore':
                 $data = $xmlApi->readHighscoreData($this->serverId, $this->category, $this->type);

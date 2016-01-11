@@ -42,6 +42,8 @@ abstract class AbstractExecutor implements ExecutorInterface
         if ($this->counter % $this->batchSize == 0) {
             $this->flush();
         }
+
+        return $this;
     }
 
     public function __destruct()
@@ -55,6 +57,8 @@ abstract class AbstractExecutor implements ExecutorInterface
             $this->flush();
             $this->counter = 0;
         }
+
+        return $this;
     }
 
     protected abstract function getQueryStart();
@@ -68,11 +72,15 @@ abstract class AbstractExecutor implements ExecutorInterface
         $this->query .= ';';
         $this->dbConn->query($this->query);
         $this->query = $this->getQueryStart();
+
+        return $this;
     }
 
     protected function queryPartCut()
     {
         $this->query = substr($this->query, 0, -2);
+
+        return $this;
     }
 
     protected abstract function getQueryEnd();
