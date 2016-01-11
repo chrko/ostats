@@ -5,10 +5,12 @@ namespace ChrKo\OStats\Task;
 
 use ChrKo\OStats\DB;
 
-class Scheduler {
+class Scheduler
+{
     public static $forceReschedule = false;
 
-    public static function queue(XmlApiUpdate $task) {
+    public static function prepare(XmlApiUpdate $task)
+    {
         $data = [
             'due_time' => DB::formatTimestamp($task->getDueTime()),
             'server_id' => $task->getServerId(),
@@ -32,6 +34,13 @@ class Scheduler {
                     break;
             }
         });
+
+        return $data;
+    }
+
+    public static function queue(XmlApiUpdate $task)
+    {
+        $data = self::prepare($task);
 
         $query = 'SELECT `due_time` FROM `tasks`'
             . ' WHERE `server_id` = :server_id AND `endpoint` = :endpoint'

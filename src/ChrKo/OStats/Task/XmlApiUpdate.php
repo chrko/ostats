@@ -3,6 +3,8 @@
 namespace ChrKo\OStats\Task;
 
 
+use ChrKo\OStats\BulkQuery\ScheduleInsert;
+use ChrKo\OStats\DB;
 use ChrKo\OStats\XmlApi;
 
 class XmlApiUpdate
@@ -14,13 +16,17 @@ class XmlApiUpdate
     protected $category = 0;
     protected $type = 0;
 
-    public function __construct($serverId, $endpoint, $category = 0, $type = 0, $dueTime = 0)
+    public function __construct($serverId, $endpoint, $category = 0, $type = 0, $dueTime = false)
     {
-        $this->serverId = (string)$serverId;
-        $this->dueTime = (int)$dueTime;
-        $this->endpoint = (string)$endpoint;
-        $this->category = (int)$category;
-        $this->type = (int)$type;
+        $this->serverId = (string) $serverId;
+        $this->dueTime = (int) $dueTime;
+        $this->endpoint = (string) $endpoint;
+        $this->category = (int) $category;
+        $this->type = (int) $type;
+
+        if ($this->dueTime === false) {
+            $this->dueTime = time();
+        }
 
         $this->checkArguments();
     }
@@ -32,6 +38,11 @@ class XmlApiUpdate
                 'category' => [0],
                 'type' => [0],
                 'interval' => 24 * 60 * 60,
+            ],
+            'player' => [
+                'category' => [0],
+                'type' => [],
+                'interval' => 7 * 24 * 60 * 60,
             ],
             'players' => [
                 'category' => [0],
@@ -61,8 +72,21 @@ class XmlApiUpdate
                 $data = $xmlApi->readAllianceData($this->serverId);
                 $xmlApi->processAllianceData($data);
                 break;
+            case 'player':
+                $data = $xmlApi->readPlayerData($this->serverId, $this->type);
+                $xmlApi->processPlayerData($data);
+                break;
             case 'players':
                 $data = $xmlApi->readPlayersData($this->serverId);
+                $bulkQuery = new ScheduleInsert(DB::getConn());
+                foreach ($data['players'] as $player) {
+                    $bulkQuery->run(
+                        Scheduler::prepare(
+                            new self($data['server_id'], 'player', 0, $player['id'])
+                        )
+                    );
+                }
+                $bulkQuery->finish();
                 $xmlApi->processPlayersData($data);
                 break;
             case 'highscore':
@@ -147,7 +171,7 @@ class XmlApiUpdate
 
         if (!array_key_exists($this->endpoint, $args)
             || !in_array($this->category, $args[$this->endpoint]['category'])
-            || !in_array($this->type, $args[$this->endpoint]['type'])
+            || (!in_array($this->type, $args[$this->endpoint]['type']) && $this->endpoint != 'player')
         ) {
             throw new \InvalidArgumentException;
         }

@@ -203,6 +203,108 @@ class XmlApi
         ];
     }
 
+    public function readPlayerData($serverId, $playerId)
+    {
+        $xmlReader = new XmlReader();
+        $xmlReader->open(self::getServerBaseById($serverId) . 'api/playerData.xml?id=' . $playerId);
+
+        $xmlReader->read();
+        if ($xmlReader->name != 'playerData') {
+            throw new UnknownElementException('playerData', $xmlReader->name);
+        }
+
+        $timestamp = (int) $xmlReader->getAttribute('timestamp');
+        $lastUpdate = date('Y-m-d H:i:s', $timestamp);
+
+        $data = [
+            'server_id' => $serverId,
+            'player_id' => $playerId,
+            'last_update' => $lastUpdate,
+            'timestamp' => $timestamp,
+            'highscore' => [],
+            'planets' => [],
+            'moons' => [],
+            'alliance_id' => 0,
+            'alliance_name' => '',
+            'alliance_tag' => '',
+        ];
+
+        if ($xmlReader->getAttribute('id') != $playerId) {
+            throw new \Exception('Something very wrong');
+        }
+
+        $data['player_name'] = $xmlReader->getAttribute('name');
+
+        $lastPlanetId = 0;
+
+        while ($xmlReader->read(false)) {
+            if ($xmlReader->nodeType != XmlReader::ELEMENT) {
+                continue;
+            }
+            switch ($xmlReader->name) {
+                case 'position':
+                    $data['highscore'][] = [
+                        'id' => $playerId,
+                        'type' => $xmlReader->getAttribute('type'),
+                        'points' => $xmlReader->getAttribute('score'),
+                        'ships' => $xmlReader->getAttribute('ships', 0),
+                    ];
+                    break;
+                case 'planet':
+                    $coords = explode(':', $xmlReader->getAttribute('coords'));
+                    $data['planets'][] = [
+                        'server_id' => $serverId,
+                        'last_update' => $lastUpdate,
+                        'id' => $xmlReader->getAttribute('id'),
+                        'name' => $xmlReader->getAttribute('name'),
+                        'galaxy' => $coords[0],
+                        'system' => $coords[1],
+                        'position' => $coords[2],
+                        'player_id' => $playerId,
+                    ];
+
+                    $lastPlanetId = $xmlReader->getAttribute('id');
+                    break;
+                case 'moon':
+                    if ($lastPlanetId === 0) {
+                        throw new \Exception;
+                    }
+                    $data['moons'][] = [
+                        'server_id' => $serverId,
+                        'last_update' => $lastUpdate,
+                        'id' => $xmlReader->getAttribute('id'),
+                        'planet_id' => $lastPlanetId,
+                        'size' => $xmlReader->getAttribute('size'),
+                        'name' => $xmlReader->getAttribute('name'),
+                    ];
+                    $lastPlanetId = 0;
+                    break;
+                case 'alliance':
+                    $data['alliance_id'] = (int) $xmlReader->getAttribute('id');
+                    break;
+                case 'name':
+                    if ($data['alliance_id'] === 0) {
+                        throw new \Exception;
+                    }
+                    $data['alliance_name'] = $xmlReader->readString();
+                    break;
+                case 'tag':
+                    if ($data['alliance_id'] === 0) {
+                        throw new \Exception;
+                    }
+                    $data['alliance_tag'] = $xmlReader->readString();
+                    break;
+                case 'positions':
+                case 'planets':
+                    break;
+                default:
+                    throw new UnknownElementException('position|planet|moon|alliance|name|tag|positions|planets', $xmlReader->name);
+            }
+        }
+
+        return $data;
+    }
+
     public function readPlayersData($serverId)
     {
         $xmlReader = new XmlReader();
@@ -369,10 +471,82 @@ class XmlApi
         $this->bulkQueries['member']->clean($serverId, $lastUpdate);
     }
 
-    public function processPlayersData(array $playerData)
+    public function processPlayerData(array $playerData)
     {
-        $serverId = $playerData['server_id'];
-        $lastUpdate = $playerData['last_update'];
+        $escape = function (&$v, $k) {
+            switch ($k) {
+                case 'server_id':
+                case 'name':
+                case 'player_name':
+                case 'alliance_name':
+                case 'alliance_tag':
+                case 'last_update':
+                    $v = '\'' . DB::getConn()->real_escape_string($v) . '\'';
+                    break;
+                case 'id':
+                case 'player_id':
+                case 'alliance_id':
+                case 'galaxy':
+                case 'system':
+                case 'position':
+                case 'size':
+                    $v = (int) $v;
+            }
+        };
+
+        foreach ($playerData['planets'] as $planet) {
+            array_walk($planet, $escape);
+            $this->bulkQueries['planet']->run($planet);
+        }
+        unset($playerData['planets'], $planet);
+
+        foreach ($playerData['moons'] as $moon) {
+            array_walk($moon, $escape);
+            $this->bulkQueries['moon']->run($moon);
+        }
+        unset($playerData['moons'], $moon);
+
+        $serverId = '\'' . DB::getConn()->real_escape_string($playerData['server_id']) . '\'';
+        $lastUpdate = '\'' . DB::getConn()->real_escape_string($playerData['last_update']) . '\'';
+
+        foreach ($playerData['highscore'] as $point) {
+            $point['server_id'] = $serverId;
+            $point['seen'] = $lastUpdate;
+            $this->bulkQueries['highscore_1_' . $point['type']]->run($point);
+        }
+        unset($playerData['highscore'], $point);
+
+        array_walk($playerData, $escape);
+
+        $query = 'INSERT INTO `player` (`server_id`, `id`, `name`, `last_update`)'
+            . ' VALUES (:server_id, :player_id, :player_name, :last_update)'
+            . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `last_update` = VALUES(`last_update`)';
+
+        if ($playerData['alliance_id'] !== 0) {
+            $this->bulkQueries['member']->run($playerData);
+
+            $query .= ';';
+            $query .= 'INSERT INTO `alliance` (`server_id`, `id`, `name`, `tag`, `last_update`)'
+                . ' VALUES (:server_id, :alliance_id, :alliance_name, :alliance_tag, :last_update)'
+                . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `tag` = VALUES(`tag`), `last_update` = VALUES(`last_update`)';
+        } else {
+            $query .= ';';
+            $query .= 'DELETE FROM `alliance_member`'
+                . ' WHERE `server_id` = :server_id AND `player_id` = :player_id';
+        }
+        $query = DB::namedReplace($query, $playerData);
+
+        foreach (explode(';', $query) as $singleQuery) {
+            DB::getConn()->query($singleQuery);
+        }
+
+        $this->flushBulkQueries();
+    }
+
+    public function processPlayersData(array $playersData)
+    {
+        $serverId = $playersData['server_id'];
+        $lastUpdate = $playersData['last_update'];
 
         $escape = function (&$value, $key) {
             switch ($key) {
@@ -395,7 +569,7 @@ class XmlApi
             }
         };
 
-        foreach ($playerData['players'] as $player) {
+        foreach ($playersData['players'] as $player) {
             $player['server_id'] = $serverId;
             $player['last_update'] = $lastUpdate;
 
