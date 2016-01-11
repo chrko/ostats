@@ -5,6 +5,8 @@ namespace ChrKo\OStats\BulkQuery;
 
 class PlanetInsert extends AbstractExecutor
 {
+    protected $batchSize = 1000;
+
     public function clean($server_id, $last_update)
     {
         $this->dbConn->query("DELETE FROM `planet` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
