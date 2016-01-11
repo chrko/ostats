@@ -16,6 +16,10 @@ class Executor
      */
     protected $whereRestriction;
     /**
+     * @var string
+     */
+    protected $minimalWhereRestriction;
+    /**
      * @var XmlApi
      */
     protected $xmlApi;
@@ -25,7 +29,9 @@ class Executor
         if (!is_string($whereRestriction)) {
             throw new \InvalidArgumentException;
         }
-        $this->whereRestriction = $whereRestriction;
+        $this->minimalWhereRestriction = DISABLE_PLAYER ? ' AND `endpoint` != \'player\' ' : '';
+
+        $this->whereRestriction = $whereRestriction . $this->minimalWhereRestriction;
         $this->xmlApi = new XmlApi();
     }
 
@@ -42,7 +48,7 @@ class Executor
             if ($this->whereRestriction == $where || $emptied) {
                 echo DB::formatTimestamp(), ' ';
             }
-            if ($this->whereRestriction != '' && $where == '') {
+            if ($this->whereRestriction != '' && $where == $this->minimalWhereRestriction) {
                 $emptied = true;
             }
             pcntl_signal_dispatch();
@@ -62,7 +68,8 @@ class Executor
             $db->query('LOCK TABLES `tasks` WRITE;');
 
             $result = $db->query(
-                'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . '\' ' . $where . 'ORDER BY `due_time` ASC, `id` ASC LIMIT 1;'
+                'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . '\' ' . $where
+                . ' ORDER BY `due_time` ASC, `id` ASC LIMIT 1;'
             );
 
             if ($result->num_rows == 1) {
@@ -131,8 +138,8 @@ class Executor
                 $timeToSleep = $timeToSleep < $timeToSleepMin ? $timeToSleepMin : $timeToSleep;
 
                 $result->close();
-                if ($timeToSleep == $timeToSleepMax && $where != '') {
-                    $where = '';
+                if ($timeToSleep == $timeToSleepMax && $where != $this->minimalWhereRestriction) {
+                    $where = $this->minimalWhereRestriction;
                     continue;
                 }
 

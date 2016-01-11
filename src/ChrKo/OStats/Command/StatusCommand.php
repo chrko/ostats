@@ -19,16 +19,20 @@ class StatusCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $where = ' 1 ';
+        if (DISABLE_PLAYER) {
+            $where = ' `endpoint` != \'player\' ';
+        }
         $dbResults = [];
         $dbResults['totalTasks'] = DB::getConn()->query(
-            'SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` GROUP BY `endpoint`');
+            'SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` WHERE ' . $where . ' GROUP BY `endpoint`');
         $dbResults['delayedTasks'] = DB::getConn()->query(
             'SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks`'
-            . ' WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\''
+            . ' WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\' AND ' . $where
             . ' GROUP BY `endpoint`');
         $dbResults['delayedTime'] = DB::getConn()->query(
             'SELECT MIN(`due_time`) AS `min_due_time`, `endpoint` FROM `tasks`'
-            . ' WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\''
+            . ' WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\' AND ' . $where
             . ' GROUP BY `endpoint`'
         );
 
@@ -39,13 +43,13 @@ class StatusCommand extends Command
         $delayedTasksPerEndpoint = [];
 
         while ($row = $dbResults['totalTasks']->fetch_assoc()) {
-            $totalTasks += (int)$row['count'];
-            $totalTasksPerEndpoint[$row['endpoint']] = (int)$row['count'];
+            $totalTasks += (int) $row['count'];
+            $totalTasksPerEndpoint[$row['endpoint']] = (int) $row['count'];
         }
 
         while ($row = $dbResults['delayedTasks']->fetch_assoc()) {
-            $delayedTasks += (int)$row['count'];
-            $delayedTasksPerEndpoint[$row['endpoint']] = (int)$row['count'];
+            $delayedTasks += (int) $row['count'];
+            $delayedTasksPerEndpoint[$row['endpoint']] = (int) $row['count'];
         }
 
         $delayTime = time();
