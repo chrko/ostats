@@ -27,7 +27,7 @@ class DB extends \mysqli
     {
         if (!self::$dbConn || !self::$dbConn->ping()) {
             self::$dbConn = new self(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-            if(!self::$dbConn->set_charset('utf8mb4')){
+            if (!self::$dbConn->set_charset('utf8mb4')) {
                 throw new \Exception('cannot set utf8mb4 as connection character set');
             }
         }
@@ -47,9 +47,9 @@ class DB extends \mysqli
 
         if ($this->errno) {
             echo "Query failed\n";
-            file_put_contents('failed_queries.sql', $this->error, FILE_APPEND);
-            file_put_contents('failed_queries.sql', $this->errno, FILE_APPEND);
-            file_put_contents('failed_queries.sql', $query, FILE_APPEND);
+            file_put_contents('failed_queries.sql', $this->error . "\n", FILE_APPEND);
+            file_put_contents('failed_queries.sql', $this->errno . "\n", FILE_APPEND);
+            file_put_contents('failed_queries.sql', $query . "\n", FILE_APPEND);
             throw new \Exception($this->error);
         }
 
