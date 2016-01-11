@@ -221,10 +221,9 @@ CREATE TABLE `highscore_alliance` (
   `id`        INT       UNSIGNED                    NOT NULL,
   `type`      TINYINT                               NOT NULL,
   `points`    BIGINT    UNSIGNED                    NOT NULL,
-  `seen`      TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `id`, `type`, `points`, `seen`)
+  `seen`      TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 )
-  ENGINE = InnoDB
+  ENGINE = ARCHIVE
   DEFAULT CHARSET = utf8;
 
 DROP TABLE IF EXISTS `highscore_player`;
@@ -233,10 +232,9 @@ CREATE TABLE `highscore_player` (
   `id`        INT       UNSIGNED                    NOT NULL,
   `type`      TINYINT                               NOT NULL,
   `points`    BIGINT    UNSIGNED                    NOT NULL,
-  `seen`      TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`server_id`, `id`, `type`, `points`, `seen`)
+  `seen`      TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 )
-  ENGINE = InnoDB
+  ENGINE = ARCHIVE
   DEFAULT CHARSET = utf8;
 
 DROP TRIGGER IF EXISTS `alliance_insert`;
