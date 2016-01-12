@@ -522,23 +522,22 @@ class XmlApi
             . ' VALUES (:server_id, :player_id, :player_name, :last_update)'
             . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `last_update` = VALUES(`last_update`)';
 
+        $query = DB::namedReplace($query, $playerData);
+        DB::getConn()->query($query);
+
         if ($playerData['alliance_id'] !== 0) {
             $this->bulkQueries['member']->run($playerData);
 
-            $query .= ';';
-            $query .= 'INSERT INTO `alliance` (`server_id`, `id`, `name`, `tag`, `last_update`)'
+            $query = 'INSERT INTO `alliance` (`server_id`, `id`, `name`, `tag`, `last_update`)'
                 . ' VALUES (:server_id, :alliance_id, :alliance_name, :alliance_tag, :last_update)'
                 . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `tag` = VALUES(`tag`), `last_update` = VALUES(`last_update`)';
         } else {
-            $query .= ';';
-            $query .= 'DELETE FROM `alliance_member`'
+            $query = 'DELETE FROM `alliance_member`'
                 . ' WHERE `server_id` = :server_id AND `player_id` = :player_id';
         }
         $query = DB::namedReplace($query, $playerData);
+        DB::getConn()->query($query);
 
-        foreach (explode(';', $query) as $singleQuery) {
-            DB::getConn()->query($singleQuery);
-        }
 
         $this->flushBulkQueries();
     }
