@@ -59,17 +59,9 @@ class Executor
 
             $db = DB::getConn();
 
-            if (!$db->autocommit(false)) {
-                echo 'Cannot disable autocommit';
-                sleep(60);
-                continue;
-            }
-
-            $db->query('LOCK TABLES `tasks` WRITE;');
-
             $result = $db->query(
                 'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . '\' ' . $where
-                . ' ORDER BY `due_time` ASC, `id` ASC LIMIT 1;'
+                . ' ORDER BY `due_time` ASC LIMIT 1;'
             );
 
             if ($result->num_rows == 1) {
@@ -83,15 +75,8 @@ class Executor
                 if ($db->affected_rows != 1) {
                     echo '?!? ', $db->affected_rows, ' rows affected', "\n";
                     echo $db->error, "\n";
-                    $db->query('UNLOCK TABLES;');
                     continue;
                 };
-
-                $db->query('UNLOCK TABLES;');
-                if (!$db->autocommit(true)) {
-                    echo 'Unable to enable autocommit';
-                    continue;
-                }
 
                 $task['delay'] = date('H:i:s', time() - strtotime($task['due_time']));
 
@@ -121,8 +106,6 @@ class Executor
                 }
             } else {
                 $result->close();
-                $db->query('UNLOCK TABLES;');
-                $db->autocommit(true);
                 $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ' . $this->whereRestriction . ' ORDER BY `due_time` ASC LIMIT 1');
 
                 $timeToSleepMin = !defined('MIN_SLEEP_TIME') ? 30 : MIN_SLEEP_TIME;
