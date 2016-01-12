@@ -73,7 +73,11 @@ class XmlApiUpdate
                 $xmlApi->processAllianceData($data);
                 break;
             case 'player':
-                $data = $xmlApi->readPlayerData($this->serverId, $this->type);
+                try {
+                    $data = $xmlApi->readPlayerData($this->serverId, $this->type);
+                } catch (\Exception $e) {
+                    return;
+                }
                 $xmlApi->processPlayerData($data);
                 break;
             case 'players':
