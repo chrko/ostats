@@ -74,7 +74,6 @@ class Executor
                 $db->query('UPDATE `tasks` SET `running` = 1 WHERE `id` = ' . $task['id']);
                 if ($db->affected_rows != 1) {
                     echo '?!? ', $db->affected_rows, ' rows affected', "\n";
-                    echo $db->error, "\n";
                     continue;
                 };
 
