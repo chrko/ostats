@@ -5,6 +5,8 @@ namespace ChrKo\XmlReaderProxy;
 use ChrKo\XmlReaderProxy\Exceptions\AttributeNotFoundExecption;
 use ChrKo\XmlReaderProxy\Exceptions\XmlReaderExecption;
 
+use GuzzleHttp\Client;
+
 class XmlReader extends \XMLReader
 {
     protected static $cacheDir = null;
@@ -21,12 +23,17 @@ class XmlReader extends \XMLReader
 
     public function open($uri, $encoding = null, $options = 0)
     {
-        if(self::$cacheDir === null) {
-            $return = parent::open($uri, $encoding, $options);
-        } else {
-            $xml = file_get_contents($uri);
-            $return = $this->xml($xml, $encoding, $options);
+        $client = new Client([
+            'timeout' => 2.0
+        ]);
+
+        $response = $client->get($uri);
+        if ($response->getStatusCode() != 200) {
+            throw new \LogicException('unexpected status code ' . $response->getStatusCode());
         }
+        $xml = (string) $response->getBody();
+
+        $return = $this->xml($xml, $encoding, $options);
 
         if ($return === false) {
             throw new XmlReaderExecption();
