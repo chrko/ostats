@@ -6,26 +6,33 @@ use ChrKo\XmlReaderProxy\Exceptions\AttributeNotFoundExecption;
 use ChrKo\XmlReaderProxy\Exceptions\XmlReaderExecption;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 
 class XmlReader extends \XMLReader
 {
-    protected static $cacheDir = null;
+    public static $guzzleClient;
 
-    public static function getCacheDir()
+    public static function getGuzzleClient()
     {
-        return self::$cacheDir;
-    }
+        if (!self::$guzzleClient && !self::$guzzleClient instanceof ClientInterface) {
+            self::$guzzleClient = new Client([
+                'timeout' => 1.0,
+                'curl' => [
+                    CURLOPT_FORBID_REUSE => false,
+                ],
+                'headers' => [
+                    'Connection' => 'Keep-Alive',
+                    'Keep-Alive' => '300',
+                ]
+            ]);
+        }
 
-    public static function setCacheDir($cacheDir)
-    {
-        self::$cacheDir = $cacheDir;
+        return self::$guzzleClient;
     }
 
     public function open($uri, $encoding = null, $options = 0)
     {
-        $client = new Client([
-            'timeout' => 2.0
-        ]);
+        $client = self::getGuzzleClient();
 
         $response = $client->get($uri);
         if ($response->getStatusCode() != 200) {
