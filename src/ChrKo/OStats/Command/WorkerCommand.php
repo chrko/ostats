@@ -20,17 +20,26 @@ class WorkerCommand extends Command
             ->setDescription('Executing worker instance')
             ->addArgument(
                 'endpoints',
-                InputArgument::IS_ARRAY
+                InputArgument::IS_ARRAY,
+                'Filter tasks by these specified endpoints'
             )
             ->addOption(
                 'category',
                 null,
-                InputOption::VALUE_OPTIONAL
+                InputOption::VALUE_OPTIONAL,
+                'Filter tasks by this category'
             )
             ->addOption(
                 'type',
                 null,
-                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                'Filter tasks by these types'
+            )
+            ->addOption(
+                'allow-restriction-ignorance',
+                'f',
+                InputOption::VALUE_NONE,
+                'Enforce filters'
             );
     }
 
@@ -71,7 +80,7 @@ class WorkerCommand extends Command
             unset($tmp);
         }
 
-        $executor = new Executor($whereRestriction);
+        $executor = new Executor($whereRestriction, !$input->getOption('allow-restriction-ignorance'));
 
         declare(ticks = 1);
         pcntl_signal(SIGTERM, [$executor, 'stop']);

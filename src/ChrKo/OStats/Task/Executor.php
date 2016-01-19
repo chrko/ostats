@@ -20,11 +20,15 @@ class Executor
      */
     protected $minimalWhereRestriction;
     /**
+     * @var bool
+     */
+    protected $allowRestrictionIgnorance = true;
+    /**
      * @var XmlApi
      */
     protected $xmlApi;
 
-    public function __construct($whereRestriction = '')
+    public function __construct($whereRestriction = '', $allowRestrictionIgnorance = true)
     {
         if (!is_string($whereRestriction)) {
             throw new \InvalidArgumentException;
@@ -32,6 +36,7 @@ class Executor
         $this->minimalWhereRestriction = DISABLE_PLAYER ? ' AND `endpoint` != \'player\' ' : '';
 
         $this->whereRestriction = $whereRestriction . $this->minimalWhereRestriction;
+        $this->allowRestrictionIgnorance = (bool) $allowRestrictionIgnorance;
         $this->xmlApi = new XmlApi();
     }
 
@@ -120,7 +125,7 @@ class Executor
                 $timeToSleep = $timeToSleep < $timeToSleepMin ? $timeToSleepMin : $timeToSleep;
 
                 $result->close();
-                if ($timeToSleep == $timeToSleepMax && $where != $this->minimalWhereRestriction) {
+                if ($timeToSleep == $timeToSleepMax && $where != $this->minimalWhereRestriction && $this->allowRestrictionIgnorance) {
                     $where = $this->minimalWhereRestriction;
                     continue;
                 }
