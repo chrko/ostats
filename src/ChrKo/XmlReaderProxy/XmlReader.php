@@ -41,6 +41,38 @@ class XmlReader extends \XMLReader
         }
         $xml = (string) $response->getBody();
 
+        if(defined('CACHE_DIR')) {
+            $tmp = new self();
+            $tmp->xml($xml, $encoding, $options);
+            $tmp->read();
+            $timestamp = $tmp->getAttribute('timestamp');
+            $tmp->close();
+            unset($tmp);
+            $uri_parts = parse_url($uri);
+            if (preg_match('/^\/(.*)\/(.*).xml/', $uri_parts['path'], $matches) !== 1) {
+
+            }
+            $query_parts = [];
+            $query_raw_parts = explode('&', $uri_parts['query']);
+            foreach ($query_raw_parts as $part) {
+                if (strlen($part) == 0) {
+                    continue;
+                }
+                $part = explode('=', $part);
+                $query_parts[$part[0]] = $part[1];
+            }
+            ksort($query_parts);
+            $query_part = '';
+            foreach ($query_parts as $key => $value) {
+                $query_part .= $key . '=' . $value . '_';
+            }
+            $filename = CACHE_DIR . DIRECTORY_SEPARATOR . $uri_parts['host'] . DIRECTORY_SEPARATOR . $matches[2] . '_' . $query_part . $timestamp . '.xml';
+            @mkdir(dirname($filename), 0777, true);
+            if (is_dir(dirname($filename))) {
+                file_put_contents($filename, $xml);
+            }
+        }
+
         $return = $this->xml($xml, $encoding, $options);
 
         if ($return === false) {
