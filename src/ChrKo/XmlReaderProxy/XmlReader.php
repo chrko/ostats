@@ -53,7 +53,7 @@ class XmlReader extends \XMLReader
 
             }
             $query_parts = [];
-            $query_raw_parts = explode('&', $uri_parts['query']);
+            $query_raw_parts = isset($uri_parts['query']) ? explode('&', $uri_parts['query']) : [];
             foreach ($query_raw_parts as $part) {
                 if (strlen($part) == 0) {
                     continue;
