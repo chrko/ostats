@@ -91,7 +91,11 @@ class Executor
 
                 try {
                     $job = unserialize($task['job']);
-                    $job->run($this->xmlApi);
+                    if ($job instanceof TaskInterface) {
+                        $job->run($this->xmlApi);
+                    } else {
+                        echo ' ERROR INVALID TASK';
+                    }
 
                     $db->query('DELETE FROM `tasks` WHERE `id` = ' . $task['id']);
                     echo ' finished', "\n";

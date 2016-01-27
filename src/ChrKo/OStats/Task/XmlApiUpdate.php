@@ -7,7 +7,7 @@ use ChrKo\OStats\BulkQuery\ScheduleInsert;
 use ChrKo\OStats\DB;
 use ChrKo\OStats\XmlApi;
 
-class XmlApiUpdate
+class XmlApiUpdate implements TaskInterface
 {
     protected $dueTime = 0;
 

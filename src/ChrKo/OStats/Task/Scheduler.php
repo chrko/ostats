@@ -9,7 +9,7 @@ class Scheduler
 {
     public static $forceReschedule = false;
 
-    public static function prepare(XmlApiUpdate $task)
+    public static function prepare(TaskInterface $task)
     {
         $data = [
             'due_time' => DB::formatTimestamp($task->getDueTime()),
@@ -38,7 +38,7 @@ class Scheduler
         return $data;
     }
 
-    public static function queue(XmlApiUpdate $task)
+    public static function queue(TaskInterface $task)
     {
         $data = self::prepare($task);
 
