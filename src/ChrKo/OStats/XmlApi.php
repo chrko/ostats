@@ -245,9 +245,10 @@ class XmlApi
                 case 'position':
                     $data['highscore'][] = [
                         'id' => $playerId,
-                        'type' => $xmlReader->getAttribute('type'),
-                        'points' => $xmlReader->getAttribute('score'),
-                        'ships' => $xmlReader->getAttribute('ships', 0),
+                        'type' => (int) $xmlReader->getAttribute('type'),
+                        'position' => (int) $xmlReader->readString(),
+                        'points' => (int) $xmlReader->getAttribute('score'),
+                        'ships' => (int) $xmlReader->getAttribute('ships', 0),
                     ];
                     break;
                 case 'planet':
