@@ -3,6 +3,7 @@
 namespace ChrKo\OStats\Command;
 
 use ChrKo\OStats\DB;
+use ChrKo\OStats\Task\XmlApiUpdate;
 use Symfony\Component\Console\Command\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -69,57 +70,62 @@ class PartitionCommand extends Command {
 
         $steps = array_reverse($steps);
 
-        $table = 'highscore_1_0';
-        foreach ($steps as $step) {
-            $parts = DB::getConn()
-                ->query('SELECT PARTITION_NAME AS `name`, PARTITION_DESCRIPTION AS `limit` FROM information_schema.PARTITIONS
+        foreach (XmlApiUpdate::getAllowedArguments()['highscore']['category'] as $category) {
+            foreach (XmlApiUpdate::getAllowedArguments()['highscore']['type'] as $type) {
+                $table = 'highscore_' . $category . '_' . $type;
+
+                foreach ($steps as $step) {
+                    $parts = DB::getConn()
+                        ->query('SELECT PARTITION_NAME AS `name`, PARTITION_DESCRIPTION AS `limit` FROM information_schema.PARTITIONS
                     WHERE TABLE_SCHEMA = \'' . DB_NAME . '\'
                     AND TABLE_NAME LIKE \'' . $table . '\'')
-                ->fetch_all(MYSQLI_ASSOC);
+                        ->fetch_all(MYSQLI_ASSOC);
 
-            $step['from'] = [];
+                    $step['from'] = [];
 
-            $pLastSkip = FALSE;
-            foreach ($parts as $part) {
-                if ($part['name'] == 'p0') {
-                    continue;
-                }
-                if ($step['name'] == $part['name'] && $step['limit_timestamp'] == (int) $part['limit']) {
-                    continue 2;
-                }
-                if ($pLastSkip || $part['limit'] != 'MAXVALUE') {
-                    if ($step['limit_timestamp'] > (int) $part['limit']
-                        && $step['name'] != $part['name']
-                        && !(strpos($step['name'],'w_') !== false && strpos($part['name'], 'd_') !== false)
-                    ) {
+                    $pLastSkip = FALSE;
+                    foreach ($parts as $part) {
+                        if ($part['name'] == 'p0') {
+                            continue;
+                        }
+                        if ($step['name'] == $part['name'] && $step['limit_timestamp'] == (int) $part['limit']) {
+                            continue 2;
+                        }
+                        if ($pLastSkip || $part['limit'] != 'MAXVALUE') {
+                            if ($step['limit_timestamp'] > (int) $part['limit']
+                                && $step['name'] != $part['name']
+                                && !(strpos($step['name'], 'w_') !== FALSE && strpos($part['name'], 'd_') !== FALSE)
+                            ) {
+                                continue;
+                            }
+                            if ($step['limit_timestamp'] < (int) $part['limit']) {
+                                continue;
+                            }
+                            if ($step['limit_timestamp'] == (int) $part['limit']) {
+                                $pLastSkip = TRUE;
+                            }
+                        }
+                        $step['from'][$part['name']] = [
+                            'name' => $part['name'],
+                            'limit' => $part['limit'],
+                        ];
                         continue;
                     }
-                    if ($step['limit_timestamp'] < (int) $part['limit']) {
-                        continue;
+
+                    $sql = "ALTER TABLE ${table} REORGANIZE PARTITION " . join(',', array_keys($step['from']))
+                        . " INTO (\n";
+                    $sql .= "PARTITION ${step['name']} VALUES LESS THAN (${step['limit_timestamp']})";
+                    if (in_array('pLast', array_keys($step['from']))) {
+                        $sql .= ",\nPARTITION pLast VALUES LESS THAN MAXVALUE";
                     }
-                    if ($step['limit_timestamp'] == (int) $part['limit']) {
-                        $pLastSkip = TRUE;
-                    }
+
+                    $sql .= "\n);";
+
+                    $output->writeln($sql);
+
+                    DB::getConn()->query($sql);
                 }
-                $step['from'][$part['name']] = [
-                    'name' => $part['name'],
-                    'limit' => $part['limit'],
-                ];
-                continue;
             }
-
-            $sql = "ALTER TABLE ${table} REORGANIZE PARTITION " . join(',', array_keys($step['from']))
-                . " INTO (\n";
-            $sql .= "PARTITION ${step['name']} VALUES LESS THAN (${step['limit_timestamp']})";
-            if (in_array('pLast', array_keys($step['from']))) {
-                $sql .= ",\nPARTITION pLast VALUES LESS THAN MAXVALUE";
-            }
-
-            $sql .= "\n);";
-
-            $output->writeln($sql);
-
-            DB::getConn()->query($sql);
         }
     }
 }
