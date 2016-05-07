@@ -36,20 +36,20 @@ class HighscoreInsert extends AbstractExecutor
         if ($this->category == 1 && $this->type == 3) {
             return
                 'INSERT IGNORE INTO `highscore_' . $this->category . '_' . $this->type
-                . '` (`server_id`, `id`, `points`, `ships`, `seen`) VALUES' . "\n";
+                . '` (`server_id`, `id`, `position`, `points`, `ships`, `seen`) VALUES' . "\n";
         }
 
         return
             'INSERT IGNORE INTO `highscore_' . $this->category . '_' . $this->type
-            . '` (`server_id`, `id`, `points`, `seen`) VALUES' . "\n";
+            . '` (`server_id`, `id`, `position`, `points`, `seen`) VALUES' . "\n";
     }
 
     protected function getQueryPart()
     {
         if ($this->category == 1 && $this->type == 3) {
-            return '(:server_id, :id, :points, :ships, :seen),' . "\n";
+            return '(:server_id, :id, :position, :points, :ships, :seen),' . "\n";
         }
-        return '(:server_id, :id, :points, :seen),' . "\n";
+        return '(:server_id, :id, :position, :points, :seen),' . "\n";
     }
 
     protected function getQueryEnd()
