@@ -39,7 +39,7 @@ class WorkerCommand extends Command
                 'allow-restriction-ignorance',
                 'f',
                 InputOption::VALUE_NONE,
-                'Enforce filters'
+                'allow restriction ignorance filters'
             );
     }
 
