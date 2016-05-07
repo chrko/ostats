@@ -7,8 +7,15 @@ use ChrKo\OStats\DB;
 
 class Scheduler
 {
+    /**
+     * @var bool
+     */
     public static $forceReschedule = false;
 
+    /**
+     * @param \ChrKo\OStats\Task\TaskInterface $task
+     * @return array
+     */
     public static function prepare(TaskInterface $task)
     {
         $data = [
@@ -38,6 +45,10 @@ class Scheduler
         return $data;
     }
 
+    /**
+     * @param \ChrKo\OStats\Task\TaskInterface $task
+     * @throws \Exception
+     */
     public static function queue(TaskInterface $task)
     {
         $data = self::prepare($task);

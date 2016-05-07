@@ -2,6 +2,8 @@
 
 namespace ChrKo\OStats\Command;
 
+use ChrKo\OStats\BulkQuery\ScheduleInsert;
+use ChrKo\OStats\DB;
 use ChrKo\OStats\Task\Scheduler;
 use ChrKo\OStats\Task\XmlApiUpdate;
 use ChrKo\OStats\XmlApi;
@@ -69,6 +71,7 @@ class CreateServerCommand extends Command
 
         if ($input->getOption('force-queue')) {
             Scheduler::$forceReschedule = true;
+            ScheduleInsert::$forceReschedule = true;
         }
 
         $serverIds = array_unique($serverIds);
@@ -76,6 +79,8 @@ class CreateServerCommand extends Command
         $count = 0;
         $interval = $input->getOption('schedule-delay');
         $start = time();
+
+        $bulkQuery = new ScheduleInsert(DB::getConn());
 
         foreach ($serverIds as $serverId) {
             foreach (XmlApiUpdate::getAllowedArguments() as $endpoint => $details) {
@@ -93,11 +98,15 @@ class CreateServerCommand extends Command
                         if (count($input->getOption('type')) > 0 && !in_array($type, $input->getOption('type'))) {
                             continue;
                         }
-                        (new XmlApiUpdate($serverId, $endpoint, $category, $type, $start + $count * $interval))->save();
+                        $bulkQuery->run(Scheduler::prepare(
+                            new XmlApiUpdate($serverId, $endpoint, $category, $type, $start + $count * $interval)
+                        ));
                         $count++;
                     }
                 }
             }
         }
+
+        $bulkQuery->finish();
     }
 }
