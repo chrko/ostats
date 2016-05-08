@@ -64,7 +64,7 @@ class Executor
 
             $db = DB::getConn();
 
-            $sql = 'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time_int` <= ' . time() . ' ' . $where
+            $sql = 'SELECT `id`, `due_time_int`, `server_id`, `endpoint`, `category`, `type`, `job` FROM `tasks` WHERE `running` = 0 AND `due_time_int` <= ' . time() . ' ' . $where
                 . ' ORDER BY `due_time_int` ASC LIMIT 1;';
             $result = $db->query($sql);
 
