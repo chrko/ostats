@@ -47,7 +47,7 @@ class HighscoreInsert extends AbstractExecutor
     protected function getQueryPart()
     {
         if ($this->category == 1 && $this->type == 3) {
-            return '(:server_id:, :id:, :position:, :points:, :ships:, :seen_int:,' . "\n";
+            return '(:server_id:, :id:, :position:, :points:, :ships:, :seen_int:),' . "\n";
         }
         return '(:server_id:, :id:, :position:, :points:, :seen_int:),' . "\n";
     }
