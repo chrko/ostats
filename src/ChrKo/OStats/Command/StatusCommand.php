@@ -31,7 +31,7 @@ class StatusCommand extends Command
             . ' WHERE `running` = 0 AND `due_time_int` < ' . time() . ' AND ' . $where
             . ' GROUP BY `endpoint`');
         $dbResults['delayedTime'] = DB::getConn()->query(
-            'SELECT MIN(`due_time`) AS `min_due_time`, `endpoint` FROM `tasks`'
+            'SELECT MIN(`due_time_int`) AS `min_due_time`, `endpoint` FROM `tasks`'
             . ' WHERE `running` = 0 AND `due_time_int` < ' . time() . ' AND ' . $where
             . ' GROUP BY `endpoint`'
         );
@@ -55,7 +55,7 @@ class StatusCommand extends Command
         $delayTime = time();
         $delayTimePerEndpoint = [];
         while ($row = $dbResults['delayedTime']->fetch_assoc()) {
-            $timestamp = strtotime($row['min_due_time']);
+            $timestamp = (int) $row['min_due_time'];
             $delayTime = $delayTime < $timestamp ? $delayTime : $timestamp;
             $delayTimePerEndpoint[$row['endpoint']] = $timestamp;
         }

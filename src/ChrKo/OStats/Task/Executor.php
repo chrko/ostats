@@ -81,6 +81,7 @@ class Executor
                     continue;
                 };
 
+                $task['due_time'] = DB::formatTimestamp($task['due_time_int']);
                 $task['delay'] = date('H:i:s', time() - (int)$task['due_time_int']);
 
                 echo DB::namedReplace(
