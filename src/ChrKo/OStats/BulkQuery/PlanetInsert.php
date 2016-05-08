@@ -7,9 +7,9 @@ class PlanetInsert extends AbstractExecutor
 {
     protected $batchSize = 1000;
 
-    public function clean($server_id, $last_update)
+    public function clean($server_id, $last_update_int)
     {
-        $this->dbConn->query("DELETE FROM `planet` WHERE `last_update` < '${last_update}' AND `server_id` = '${server_id}';");
+        $this->dbConn->query("DELETE FROM `planet` WHERE `last_update_int` < ${last_update_int} AND `server_id` = '${server_id}';");
     }
 
     protected function getQueryStart()
@@ -22,24 +22,24 @@ class PlanetInsert extends AbstractExecutor
                 `system`,
                 `position`,
                 `player_id`,
-                `first_seen`,
-                `last_update`
+                `first_seen_int`,
+                `last_update_int`
             ) VALUES ';
     }
 
     protected function getQueryPart()
     {
-        return '(:server_id, :id, :name, :galaxy, :system, :position, :player_id, :last_update, :last_update),' . "\n";
+        return '(:server_id, :id, :name, :galaxy, :system, :position, :player_id, :last_update_int, :last_update_int),' . "\n";
     }
 
     protected function getQueryEnd()
     {
         return "\n" . 'ON DUPLICATE KEY UPDATE
-              `name`        = VALUES(`name`),
-              `galaxy`      = VALUES(`galaxy`),
-              `system`      = VALUES(`system`),
-              `position`    = VALUES(`position`),
-              `last_update` = VALUES(`last_update`)
+              `name`            = VALUES(`name`),
+              `galaxy`          = VALUES(`galaxy`),
+              `system`          = VALUES(`system`),
+              `position`        = VALUES(`position`),
+              `last_update_int` = VALUES(`last_update_int`)
         ;';
     }
 }

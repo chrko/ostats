@@ -19,7 +19,7 @@ class Scheduler
     public static function prepare(TaskInterface $task)
     {
         $data = [
-            'due_time' => DB::formatTimestamp($task->getDueTime()),
+            'due_time_int' => $task->getDueTime(),
             'server_id' => $task->getServerId(),
             'endpoint' => $task->getEndpoint(),
             'category' => $task->getCategory(),
@@ -29,12 +29,12 @@ class Scheduler
 
         array_walk($data, function (&$v, $k) {
             switch ($k) {
-                case 'due_time':
                 case 'server_id':
                 case 'endpoint':
                 case 'job':
                     $v = '\'' . DB::getConn()->real_escape_string($v) . '\'';
                     break;
+                case 'due_time_int':
                 case 'category':
                 case 'type':
                     $v = (int) $v;
@@ -53,7 +53,7 @@ class Scheduler
     {
         $data = self::prepare($task);
 
-        $query = 'SELECT `due_time` FROM `tasks`'
+        $query = 'SELECT `due_time_int` FROM `tasks`'
             . ' WHERE `server_id` = :server_id AND `endpoint` = :endpoint'
             . ' AND `category` = :category AND `type` = :type';
 
@@ -62,8 +62,8 @@ class Scheduler
         if ($result->num_rows == 0) {
             $result->free();
             $query =
-                'INSERT INTO `tasks` (`due_time`, `server_id`, `endpoint`, `category`, `type`, `job`)'
-                . ' VALUES (:due_time, :server_id, :endpoint, :category, :type, :job)';
+                'INSERT INTO `tasks` (`due_time_int`, `server_id`, `endpoint`, `category`, `type`, `job`)'
+                . ' VALUES (:due_time_int, :server_id, :endpoint, :category, :type, :job)';
 
             $query = DB::namedReplace($query, $data);
             DB::getConn()->query($query);
@@ -72,10 +72,10 @@ class Scheduler
 
         $result_data = $result->fetch_assoc();
 
-        if (self::$forceReschedule || strtotime($result_data['due_time']) < $task->getDueTime()) {
+        if (self::$forceReschedule || (int) $result_data['due_time_int'] < $task->getDueTime()) {
             $query =
-                'REPLACE INTO `tasks` (`due_time`, `server_id`, `endpoint`, `category`, `type`, `job`)'
-                . ' VALUES (:due_time, :server_id, :endpoint, :category, :type, :job)';
+                'REPLACE INTO `tasks` (`due_time_int`, `server_id`, `endpoint`, `category`, `type`, `job`)'
+                . ' VALUES (:due_time_int, :server_id, :endpoint, :category, :type, :job)';
 
             $query = DB::namedReplace($query, $data);
             DB::getConn()->query($query);

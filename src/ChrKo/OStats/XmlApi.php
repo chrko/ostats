@@ -95,8 +95,8 @@ class XmlApi
             throw new UnknownElementException('alliances', $xmlReader->name);
         }
 
-        $timestamp = (int) $xmlReader->getAttribute('timestamp');
-        $lastUpdate = date('Y-m-d H:i:s', $timestamp);
+        $lastUpdateInt = (int) $xmlReader->getAttribute('timestamp');
+        $lastUpdate = date('Y-m-d H:i:s', $lastUpdateInt);
 
         $alliances = [];
         $alliance = [];
@@ -133,7 +133,7 @@ class XmlApi
         return [
             'server_id' => $serverId,
             'last_update' => $lastUpdate,
-            'timestamp' => $timestamp,
+            'last_update_int' => $lastUpdateInt,
             'alliances' => $alliances
         ];
     }
@@ -167,8 +167,8 @@ class XmlApi
             throw new UnknownElementException('highscore', $xmlReader->name);
         }
 
-        $timestamp = (int) $xmlReader->getAttribute('timestamp');
-        $lastUpdate = date('Y-m-d H:i:s', $timestamp);
+        $lastUpdateInt = (int) $xmlReader->getAttribute('timestamp');
+        $lastUpdate = date('Y-m-d H:i:s', $lastUpdateInt);
 
         if (
             $xmlReader->getAttribute('category') != $category
@@ -196,7 +196,7 @@ class XmlApi
         return [
             'server_id' => $serverId,
             'last_update' => $lastUpdate,
-            'timestamp' => $timestamp,
+            'last_update_int' => $lastUpdateInt,
             'category' => $category,
             'type' => $type,
             'highscore' => $highscore,
@@ -213,14 +213,14 @@ class XmlApi
             throw new UnknownElementException('playerData', $xmlReader->name);
         }
 
-        $timestamp = (int) $xmlReader->getAttribute('timestamp');
-        $lastUpdate = date('Y-m-d H:i:s', $timestamp);
+        $lastUpdateInt = (int) $xmlReader->getAttribute('timestamp');
+        $lastUpdate = date('Y-m-d H:i:s', $lastUpdateInt);
 
         $data = [
             'server_id' => $serverId,
             'player_id' => $playerId,
             'last_update' => $lastUpdate,
-            'timestamp' => $timestamp,
+            'last_update_int' => $lastUpdateInt,
             'highscore' => [],
             'planets' => [],
             'moons' => [],
@@ -316,8 +316,8 @@ class XmlApi
             throw new UnknownElementException('players', $xmlReader->name);
         }
 
-        $timestamp = (int) $xmlReader->getAttribute('timestamp');
-        $lastUpdate = date('Y-m-d H:i:s', $timestamp);
+        $lastUpdateInt = (int) $xmlReader->getAttribute('timestamp');
+        $lastUpdate = date('Y-m-d H:i:s', $lastUpdateInt);
 
         $players = [];
 
@@ -348,7 +348,7 @@ class XmlApi
         return [
             'server_id' => $serverId,
             'last_update' => $lastUpdate,
-            'timestamp' => $timestamp,
+            'last_update_int' => $lastUpdateInt,
             'players' => $players
         ];
     }
@@ -363,8 +363,8 @@ class XmlApi
             throw new UnknownElementException('universe', $xmlReader->name);
         }
 
-        $timestamp = (int) $xmlReader->getAttribute('timestamp');
-        $lastUpdate = date('Y-m-d H:i:s', $timestamp);
+        $lastUpdateInt = (int) $xmlReader->getAttribute('timestamp');
+        $lastUpdate = date('Y-m-d H:i:s', $lastUpdateInt);
 
         $lastPlanetId = 0;
 
@@ -411,7 +411,7 @@ class XmlApi
         return [
             'server_id' => $serverId,
             'last_update' => $lastUpdate,
-            'timestamp' => $timestamp,
+            'last_update_int' => $lastUpdateInt,
             'planets' => $planets,
             'moons' => $moons,
         ];
@@ -420,7 +420,7 @@ class XmlApi
     public function processAllianceData(array $allianceData)
     {
         $serverId = $allianceData['server_id'];
-        $lastUpdate = $allianceData['last_update'];
+        $lastUpdateInt = $allianceData['last_update_int'];
 
         $escape = function (&$value, $key) {
             switch ($key) {
@@ -433,13 +433,13 @@ class XmlApi
                 case 'server_id':
                 case 'name':
                 case 'tag':
-                case 'last_update':
                     $value = '\'' . DB::getConn()->real_escape_string($value) . '\'';
                     break;
                 case 'id':
                 case 'alliance_id':
                 case 'player_id':
                 case 'open':
+                case 'last_update_int':
                     $value = (int) $value;
                     break;
             }
@@ -447,7 +447,7 @@ class XmlApi
 
         foreach ($allianceData['alliances'] as $alliance) {
             $alliance['server_id'] = $serverId;
-            $alliance['last_update'] = $lastUpdate;
+            $alliance['last_update_int'] = $lastUpdateInt;
             array_walk($alliance, $escape);
 
             foreach ($alliance['member'] as $memberId) {
@@ -455,7 +455,7 @@ class XmlApi
                     'server_id' => $allianceData['server_id'],
                     'alliance_id' => $alliance['id'],
                     'player_id' => $memberId,
-                    'last_update' => $allianceData['last_update']
+                    'last_update_int' => $lastUpdateInt,
                 ];
                 array_walk($data, $escape);
 
@@ -468,8 +468,8 @@ class XmlApi
 
         $this->flushBulkQueries();
 
-        $this->bulkQueries['alliance']->clean($serverId, $lastUpdate);
-        $this->bulkQueries['member']->clean($serverId, $lastUpdate);
+        $this->bulkQueries['alliance']->clean($serverId, $lastUpdateInt);
+        $this->bulkQueries['member']->clean($serverId, $lastUpdateInt);
     }
 
     public function processPlayerData(array $playerData)
@@ -481,7 +481,6 @@ class XmlApi
                 case 'player_name':
                 case 'alliance_name':
                 case 'alliance_tag':
-                case 'last_update':
                     $v = '\'' . DB::getConn()->real_escape_string($v) . '\'';
                     break;
                 case 'id':
@@ -491,6 +490,7 @@ class XmlApi
                 case 'system':
                 case 'position':
                 case 'size':
+                case 'last_update_int':
                     $v = (int) $v;
             }
         };
@@ -508,20 +508,19 @@ class XmlApi
         unset($playerData['moons'], $moon);
 
         $serverId = '\'' . DB::getConn()->real_escape_string($playerData['server_id']) . '\'';
-        $lastUpdate = '\'' . DB::getConn()->real_escape_string($playerData['last_update']) . '\'';
 
         foreach ($playerData['highscore'] as $point) {
             $point['server_id'] = $serverId;
-            $point['seen'] = $lastUpdate;
+            $point['seen_int'] = $playerData['last_update_int'];
             $this->bulkQueries['highscore_1_' . $point['type']]->run($point);
         }
         unset($playerData['highscore'], $point);
 
         array_walk($playerData, $escape);
 
-        $query = 'INSERT INTO `player` (`server_id`, `id`, `name`, `last_update`)'
-            . ' VALUES (:server_id, :player_id, :player_name, :last_update)'
-            . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `last_update` = VALUES(`last_update`)';
+        $query = 'INSERT INTO `player` (`server_id`, `id`, `name`, `last_update_int`)'
+            . ' VALUES (:server_id, :player_id, :player_name, :last_update_int)'
+            . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `last_update_int` = VALUES(`last_update_int`)';
 
         $query = DB::namedReplace($query, $playerData);
         DB::getConn()->query($query);
@@ -529,9 +528,9 @@ class XmlApi
         if ($playerData['alliance_id'] !== 0) {
             $this->bulkQueries['member']->run($playerData);
 
-            $query = 'INSERT INTO `alliance` (`server_id`, `id`, `name`, `tag`, `last_update`)'
-                . ' VALUES (:server_id, :alliance_id, :alliance_name, :alliance_tag, :last_update)'
-                . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `tag` = VALUES(`tag`), `last_update` = VALUES(`last_update`)';
+            $query = 'INSERT INTO `alliance` (`server_id`, `id`, `name`, `tag`, `last_update_int`)'
+                . ' VALUES (:server_id, :alliance_id, :alliance_name, :alliance_tag, :last_update_int)'
+                . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `tag` = VALUES(`tag`), `last_update_int` = VALUES(`last_update_int`)';
         } else {
             $query = 'DELETE FROM `alliance_member`'
                 . ' WHERE `server_id` = :server_id AND `player_id` = :player_id';
@@ -546,13 +545,12 @@ class XmlApi
     public function processPlayersData(array $playersData)
     {
         $serverId = $playersData['server_id'];
-        $lastUpdate = $playersData['last_update'];
+        $lastUpdateInt = $playersData['last_update_int'];
 
         $escape = function (&$value, $key) {
             switch ($key) {
                 case 'server_id':
                 case 'name':
-                case 'last_update':
                     $value = '\'' . DB::getConn()->real_escape_string($value) . '\'';
                     break;
                 case 'id':
@@ -564,6 +562,7 @@ class XmlApi
                 case 'banned':
                 case 'outlaw':
                 case 'admin':
+                case 'last_update_int':
                     $value = (int) $value;
                     break;
             }
@@ -571,7 +570,7 @@ class XmlApi
 
         foreach ($playersData['players'] as $player) {
             $player['server_id'] = $serverId;
-            $player['last_update'] = $lastUpdate;
+            $player['last_update_int'] = $lastUpdateInt;
 
             $player['player_id'] = $player['id'];
 
@@ -586,14 +585,14 @@ class XmlApi
 
         $this->flushBulkQueries();
 
-        $this->bulkQueries['player']->clean($serverId, $lastUpdate);
-        $this->bulkQueries['member']->clean($serverId, $lastUpdate);
+        $this->bulkQueries['player']->clean($serverId, $lastUpdateInt);
+        $this->bulkQueries['member']->clean($serverId, $lastUpdateInt);
     }
 
     public function processHighscoreData(array $highscoreData)
     {
         $serverId = '\'' . DB::getConn()->real_escape_string($highscoreData['server_id']) . '\'';
-        $lastUpdate = '\'' . DB::getConn()->real_escape_string($highscoreData['last_update']) . '\'';
+        $lastUpdateInt = $highscoreData['last_update_int'];
         $category = $highscoreData['category'];
         $type = $highscoreData['type'];
 
@@ -601,18 +600,18 @@ class XmlApi
 
         foreach ($highscoreData['highscore'] as $row) {
             $row['server_id'] = $serverId;
-            $row['seen'] = $lastUpdate;
+            $row['seen_int'] = $lastUpdateInt;
 
             $bulkQuery->run($row);
         }
 
-        $bulkQuery->finish()->clean($serverId, $lastUpdate);
+        $bulkQuery->finish()->clean($serverId, $lastUpdateInt);
     }
 
     public function processUniverseData(array $universeData)
     {
         $serverId = $universeData['server_id'];
-        $lastUpdate = $universeData['last_update'];
+        $lastUpdateInt = $universeData['last_update_int'];
 
         $escape = function (&$v, $k) {
             switch ($k) {
@@ -627,13 +626,14 @@ class XmlApi
                 case 'position':
                 case 'player_id':
                 case 'size':
+                case 'last_update_int':
                     $v = (int) $v;
             }
         };
 
         foreach ($universeData['planets'] as $planet) {
             $planet['server_id'] = $serverId;
-            $planet['last_update'] = $lastUpdate;
+            $planet['last_update_int'] = $lastUpdateInt;
 
             array_walk($planet, $escape);
             $this->bulkQueries['planet']->run($planet);
@@ -641,7 +641,7 @@ class XmlApi
 
         foreach ($universeData['moons'] as $moon) {
             $moon['server_id'] = $serverId;
-            $moon['last_update'] = $lastUpdate;
+            $moon['last_update_int'] = $lastUpdateInt;
 
             array_walk($moon, $escape);
             $this->bulkQueries['moon']->run($moon);
@@ -649,7 +649,7 @@ class XmlApi
 
         $this->flushBulkQueries();
 
-        $this->bulkQueries['planet']->clean($serverId, $lastUpdate);
-        $this->bulkQueries['moon']->clean($serverId, $lastUpdate);
+        $this->bulkQueries['planet']->clean($serverId, $lastUpdateInt);
+        $this->bulkQueries['moon']->clean($serverId, $lastUpdateInt);
     }
 }

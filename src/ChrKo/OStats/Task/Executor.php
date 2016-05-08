@@ -64,10 +64,9 @@ class Executor
 
             $db = DB::getConn();
 
-            $result = $db->query(
-                'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time` <= \'' . DB::formatTimestamp() . '\' ' . $where
-                . ' ORDER BY `due_time` ASC LIMIT 1;'
-            );
+            $sql = 'SELECT * FROM `tasks` WHERE `running` = 0 AND `due_time_int` <= ' . time() . ' ' . $where
+                . ' ORDER BY `due_time_int` ASC LIMIT 1;';
+            $result = $db->query($sql);
 
             if ($result->num_rows == 1) {
                 $where = $this->whereRestriction;
@@ -82,7 +81,7 @@ class Executor
                     continue;
                 };
 
-                $task['delay'] = date('H:i:s', time() - strtotime($task['due_time']));
+                $task['delay'] = date('H:i:s', time() - (int)$task['due_time_int']);
 
                 echo DB::namedReplace(
                     'task :endpoint on server :server_id (:category, :type) due :due_time, :delay...',
@@ -107,21 +106,21 @@ class Executor
                     echo 'File: ', $e->getFile(), "\n";
 
                     $db->query(
-                        'UPDATE `tasks` SET `running` = 0, `due_time` = \''
-                        . DB::formatTimestamp(strtotime($task['due_time']) + 60 * 10)
+                        'UPDATE `tasks` SET `running` = 0, `due_time_int` = \''
+                        . ((int) $task['due_time_int'] + 60 * 10)
                         . '\' WHERE `id` = ' . $task['id']
                     );
                 }
             } else {
                 $result->close();
-                $result = $db->query('SELECT * FROM `tasks` WHERE `running` = 0 ' . $this->whereRestriction . ' ORDER BY `due_time` ASC LIMIT 1');
+                $result = $db->query('SELECT `due_time_int` FROM `tasks` WHERE `running` = 0 ' . $this->whereRestriction . ' ORDER BY `due_time_int` ASC LIMIT 1');
 
                 $timeToSleepMin = !defined('MIN_SLEEP_TIME') ? 30 : MIN_SLEEP_TIME;
                 $timeToSleepMax = !defined('MAX_SLEEP_TIME') ? 600 : MAX_SLEEP_TIME;
 
                 $timeToSleep = $timeToSleepMin;
                 if ($result->num_rows > 0) {
-                    $timeToSleep = strtotime($result->fetch_object()->due_time) - time() + 1;
+                    $timeToSleep = (int) $result->fetch_object()->due_time_int - time() + 1;
                     $timeToSleep = $timeToSleep >= $timeToSleepMin ? $timeToSleep : $timeToSleepMin;
                 }
 

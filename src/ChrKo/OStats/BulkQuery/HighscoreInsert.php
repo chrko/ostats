@@ -27,7 +27,7 @@ class HighscoreInsert extends AbstractExecutor
         }
     }
 
-    public function clean($server_id, $last_update)
+    public function clean($server_id, $last_update_int)
     {
     }
 
@@ -36,20 +36,20 @@ class HighscoreInsert extends AbstractExecutor
         if ($this->category == 1 && $this->type == 3) {
             return
                 'INSERT IGNORE INTO `highscore_' . $this->category . '_' . $this->type
-                . '` (`server_id`, `id`, `position`, `points`, `ships`, `seen`) VALUES' . "\n";
+                . '` (`server_id`, `id`, `position`, `points`, `ships`, `seen_int`) VALUES' . "\n";
         }
 
         return
             'INSERT IGNORE INTO `highscore_' . $this->category . '_' . $this->type
-            . '` (`server_id`, `id`, `position`, `points`, `seen`) VALUES' . "\n";
+            . '` (`server_id`, `id`, `position`, `points`, `seen_int`) VALUES' . "\n";
     }
 
     protected function getQueryPart()
     {
         if ($this->category == 1 && $this->type == 3) {
-            return '(:server_id, :id, :position, :points, :ships, :seen),' . "\n";
+            return '(:server_id, :id, :position, :points, :ships, :seen_int),' . "\n";
         }
-        return '(:server_id, :id, :position, :points, :seen),' . "\n";
+        return '(:server_id, :id, :position, :points, :seen_int),' . "\n";
     }
 
     protected function getQueryEnd()

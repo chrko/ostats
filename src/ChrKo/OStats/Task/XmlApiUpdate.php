@@ -105,7 +105,7 @@ class XmlApiUpdate implements TaskInterface
                 throw new \InvalidArgumentException;
         }
 
-        $next->setDueTime($data['timestamp'] + $this->getAllowedArguments()[$this->getEndpoint()]['interval'] + 60);
+        $next->setDueTime($data['last_update_int'] + $this->getAllowedArguments()[$this->getEndpoint()]['interval'] + 60);
         $next->save();
     }
 

@@ -1,49 +1,66 @@
 DROP TRIGGER IF EXISTS `alliance_member_insert`;
 CREATE TRIGGER `alliance_member_insert` AFTER INSERT ON `alliance_member`
-FOR EACH ROW INSERT INTO `alliance_member_log` VALUES (
+FOR EACH ROW INSERT INTO `alliance_member_log` (
+    `server_id`,
+    `alliance_id`,
+    `player_id`,
+    `first_seen_int`
+) VALUES (
     NEW.`server_id`,
     NEW.`alliance_id`,
     NEW.`player_id`,
-    NEW.`first_seen`,
-    NULL
+    NEW.`first_seen_int`
 )
-ON DUPLICATE KEY UPDATE `last_seen` = NULL;
+ON DUPLICATE KEY UPDATE `last_seen_int` = NULL;
 
 DROP TRIGGER IF EXISTS `alliance_member_delete`;
 CREATE TRIGGER `alliance_member_delete` AFTER DELETE ON `alliance_member`
-FOR EACH ROW INSERT INTO `alliance_member_log` VALUES (
+FOR EACH ROW INSERT INTO `alliance_member_log` (
+    `server_id`,
+    `alliance_id`,
+    `player_id`,
+    `first_seen_int`,
+    `last_seen_int`
+) VALUES (
     OLD.`server_id`,
     OLD.`alliance_id`,
     OLD.`player_id`,
-    OLD.`first_seen`,
-    OLD.`last_update`
+    OLD.`first_seen_int`,
+    OLD.`last_update_int`
 )
 ON DUPLICATE KEY UPDATE
-    `last_seen` = OLD.`last_update`;
+    `last_seen_int` = OLD.`last_update_int`;
 
 DROP TRIGGER IF EXISTS `alliance_insert`;
 CREATE TRIGGER `alliance_insert` AFTER INSERT ON `alliance`
-FOR EACH ROW INSERT INTO `alliance_overall` VALUES (
+FOR EACH ROW INSERT INTO `alliance_overall` (
+    `server_id`,
+    `id`,
+    `name`,
+    `tag`,
+    `homepage`,
+    `logo`,
+    `first_seen_int`
+) VALUES (
     NEW.`server_id`,
     NEW.`id`,
     NEW.`name`,
     NEW.`tag`,
     NEW.`homepage`,
     NEW.`logo`,
-    NEW.`last_update`,
-    NULL
+    NEW.`last_update_int`
 )
 ON DUPLICATE KEY UPDATE
-    `name`      = NEW.`name`,
-    `tag`       = NEW.`tag`,
-    `homepage`  = NEW.`homepage`,
-    `logo`      = NEW.`logo`,
-    `last_seen` = NULL;
+    `name`          = NEW.`name`,
+    `tag`           = NEW.`tag`,
+    `homepage`      = NEW.`homepage`,
+    `logo`          = NEW.`logo`,
+    `last_seen_int` = NULL;
 
 DROP TRIGGER IF EXISTS `alliance_delete`;
 CREATE TRIGGER `alliance_delete` AFTER DELETE ON `alliance`
 FOR EACH ROW UPDATE `alliance_overall`
-SET `last_seen` = OLD.`last_update`
+SET `last_seen_int` = OLD.`last_update_int`
 WHERE `id` = OLD.`id` AND `server_id` = OLD.`server_id`;
 
 DROP TRIGGER IF EXISTS `alliance_update`;
@@ -60,10 +77,16 @@ FOR EACH ROW BEGIN
 
     IF OLD.`name` <> NEW.`name`
     THEN
-        INSERT INTO `alliance_log_name` VALUES (
+        INSERT INTO `alliance_log_name` (
+            `server_id`,
+            `alliance_id`,
+            `seen_int`,
+            `old_name`,
+            `new_name`
+        ) VALUES (
             NEW.`server_id`,
             NEW.`id`,
-            NEW.`last_update`,
+            NEW.`last_update_int`,
             OLD.`name`,
             NEW.`name`
         )
@@ -74,10 +97,16 @@ FOR EACH ROW BEGIN
 
     IF OLD.`tag` <> NEW.`tag`
     THEN
-        INSERT INTO `alliance_log_tag` VALUES (
+        INSERT INTO `alliance_log_tag` (
+            `server_id`,
+            `alliance_id`,
+            `seen_int`,
+            `old_tag`,
+            `new_tag`
+        ) VALUES (
             NEW.`server_id`,
             NEW.`id`,
-            NEW.`last_update`,
+            NEW.`last_update_int`,
             OLD.`tag`,
             NEW.`tag`
         )
@@ -90,10 +119,16 @@ FOR EACH ROW BEGIN
        OR (OLD.`logo` IS NULL AND NEW.`logo` IS NOT NULL)
        OR (OLD.`logo` IS NOT NULL AND NEW.`logo` IS NULL)
     THEN
-        INSERT INTO `alliance_log_logo` VALUES (
+        INSERT INTO `alliance_log_logo` (
+            `server_id`,
+            `alliance_id`,
+            `seen_int`,
+            `old_logo`,
+            `new_logo`
+        ) VALUES (
             NEW.`server_id`,
             NEW.`id`,
-            NEW.`last_update`,
+            NEW.`last_update_int`,
             OLD.`logo`,
             NEW.`logo`
         )
@@ -106,10 +141,16 @@ FOR EACH ROW BEGIN
        OR (OLD.`homepage` IS NULL AND NEW.`homepage` IS NOT NULL)
        OR (OLD.`homepage` IS NOT NULL AND NEW.`homepage` IS NULL)
     THEN
-        INSERT INTO `alliance_log_homepage` VALUES (
+        INSERT INTO `alliance_log_homepage` (
+            `server_id`,
+            `alliance_id`,
+            `seen_int`,
+            `old_homepage`,
+            `new_homepage`
+        ) VALUES (
             NEW.`server_id`,
             NEW.`id`,
-            NEW.`last_update`,
+            NEW.`last_update_int`,
             OLD.`homepage`,
             NEW.`homepage`
         )
@@ -122,8 +163,18 @@ DELIMITER ;
 
 DROP TRIGGER IF EXISTS `player_insert`;
 CREATE TRIGGER `player_insert` AFTER INSERT ON `player`
-FOR EACH ROW INSERT INTO `player_overall`
-VALUES (
+FOR EACH ROW INSERT INTO `player_overall` (
+    `server_id`,
+    `id`,
+    `name`,
+    `vacation`,
+    `inactive`,
+    `inactive_long`,
+    `banned`,
+    `outlaw`,
+    `admin`,
+    `first_seen_int`
+) VALUES (
     NEW.`server_id`,
     NEW.`id`,
     NEW.`name`,
@@ -133,8 +184,7 @@ VALUES (
     NEW.`banned`,
     NEW.`outlaw`,
     NEW.`admin`,
-    NEW.`last_update`,
-    NULL
+    NEW.`last_update_int`
 )
 ON DUPLICATE KEY UPDATE
     `name`          = NEW.`name`,
@@ -144,12 +194,12 @@ ON DUPLICATE KEY UPDATE
     `banned`        = NEW.`banned`,
     `outlaw`        = NEW.`outlaw`,
     `admin`         = NEW.`admin`,
-    `last_seen`     = NULL;
+    `last_seen_int` = NULL;
 
 DROP TRIGGER IF EXISTS `player_delete`;
 CREATE TRIGGER `player_delete` AFTER DELETE ON `player`
 FOR EACH ROW UPDATE `player_overall`
-SET `last_seen` = OLD.`last_update`
+SET `last_seen_int` = OLD.`last_update_int`
 WHERE `id` = OLD.`id` AND `server_id` = OLD.`server_id`;
 
 
@@ -170,10 +220,16 @@ FOR EACH ROW BEGIN
 
     IF OLD.`name` <> NEW.`name`
     THEN
-        INSERT IGNORE INTO `player_log_name` VALUES (
+        INSERT IGNORE INTO `player_log_name` (
+            `server_id`,
+            `id`,
+            `seen_int`,
+            `old_name`,
+            `new_name`
+        ) VALUES (
             NEW.`server_id`,
             NEW.`id`,
-            NEW.`last_update`,
+            NEW.`last_update_int`,
             OLD.`name`,
             NEW.`name`
         );
@@ -181,10 +237,15 @@ FOR EACH ROW BEGIN
 
     IF OLD.`vacation` <> NEW.`vacation`
     THEN
-        INSERT IGNORE INTO `player_log_vacation` VALUES (
+        INSERT IGNORE INTO `player_log_vacation` (
+            `server_id`,
+            `id`,
+            `seen_int`,
+            `vacation`
+        ) VALUES (
             NEW.`server_id`,
             NEW.`id`,
-            NEW.`last_update`,
+            NEW.`last_update_int`,
             NEW.`vacation`
         );
     END IF;
@@ -193,7 +254,16 @@ DELIMITER ;
 
 DROP TRIGGER IF EXISTS `planet_insert`;
 CREATE TRIGGER `planet_insert` AFTER INSERT ON `planet`
-FOR EACH ROW INSERT INTO `planet_overall` VALUES (
+FOR EACH ROW INSERT INTO `planet_overall` (
+    `server_id`,
+    `id`,
+    `name`,
+    `galaxy`,
+    `system`,
+    `position`,
+    `player_id`,
+    `first_seen_int`
+) VALUES (
     NEW.`server_id`,
     NEW.`id`,
     NEW.`name`,
@@ -201,21 +271,29 @@ FOR EACH ROW INSERT INTO `planet_overall` VALUES (
     NEW.`system`,
     NEW.`position`,
     NEW.`player_id`,
-    NEW.`first_seen`,
-    NULL
+    NEW.`first_seen_int`
 )
 ON DUPLICATE KEY UPDATE
-    `name`      = NEW.`name`,
-    `galaxy`    = NEW.`galaxy`,
-    `system`    = NEW.`system`,
-    `position`  = NEW.`position`,
-    `last_seen` = NULL;
+    `name`          = NEW.`name`,
+    `galaxy`        = NEW.`galaxy`,
+    `system`        = NEW.`system`,
+    `position`      = NEW.`position`,
+    `last_seen_int` = NULL;
 
 DROP TRIGGER IF EXISTS `planet_update`;
 DELIMITER $$
 CREATE TRIGGER `planet_update` AFTER UPDATE ON `planet`
 FOR EACH ROW BEGIN
-    INSERT INTO `planet_overall` VALUES (
+    INSERT INTO `planet_overall` (
+        `server_id`,
+        `id`,
+        `name`,
+        `galaxy`,
+        `system`,
+        `position`,
+        `player_id`,
+        `first_seen_int`
+    ) VALUES (
         NEW.`server_id`,
         NEW.`id`,
         NEW.`name`,
@@ -223,24 +301,33 @@ FOR EACH ROW BEGIN
         NEW.`system`,
         NEW.`position`,
         NEW.`player_id`,
-        NEW.`first_seen`,
-        NULL
+        NEW.`first_seen_int`
     )
     ON DUPLICATE KEY UPDATE
-        `name`      = NEW.`name`,
-        `galaxy`    = NEW.`galaxy`,
-        `system`    = NEW.`system`,
-        `position`  = NEW.`position`,
-        `last_seen` = NULL;
+        `name`          = NEW.`name`,
+        `galaxy`        = NEW.`galaxy`,
+        `system`        = NEW.`system`,
+        `position`      = NEW.`position`,
+        `last_seen_int` = NULL;
 
     IF OLD.`galaxy` <> NEW.`galaxy`
        OR OLD.`system` <> NEW.`system`
        OR OLD.`position` <> NEW.`position`
     THEN
-        INSERT IGNORE INTO `planet_relocation` VALUES (
+        INSERT IGNORE INTO `planet_relocation` (
+            `server_id`,
+            `id`,
+            `seen_int`,
+            `old_galaxy`,
+            `old_system`,
+            `old_position`,
+            `new_galaxy`,
+            `new_system`,
+            `new_position`
+        ) VALUES (
             NEW.`server_id`,
             NEW.`id`,
-            NEW.`last_update`,
+            NEW.`last_update_int`,
             OLD.`galaxy`,
             OLD.`system`,
             OLD.`position`,
@@ -254,7 +341,17 @@ DELIMITER ;
 
 DROP TRIGGER IF EXISTS `planet_delete`;
 CREATE TRIGGER `planet_delete` AFTER DELETE ON `planet`
-FOR EACH ROW INSERT INTO `planet_overall` VALUES (
+FOR EACH ROW INSERT INTO `planet_overall` (
+    `server_id`,
+    `id`,
+    `name`,
+    `galaxy`,
+    `system`,
+    `position`,
+    `player_id`,
+    `first_seen_int`,
+    `last_seen_int`
+) VALUES (
     OLD.`server_id`,
     OLD.`id`,
     OLD.`name`,
@@ -262,57 +359,75 @@ FOR EACH ROW INSERT INTO `planet_overall` VALUES (
     OLD.`system`,
     OLD.`position`,
     OLD.`player_id`,
-    OLD.`first_seen`,
-    OLD.`last_update`
+    OLD.`first_seen_int`,
+    OLD.`last_update_int`
 )
 ON DUPLICATE KEY UPDATE
-    `name`      = OLD.`name`,
-    `galaxy`    = OLD.`galaxy`,
-    `system`    = OLD.`system`,
-    `position`  = OLD.`position`,
-    `last_seen` = OLD.`last_update`;
+    `name`          = OLD.`name`,
+    `galaxy`        = OLD.`galaxy`,
+    `system`        = OLD.`system`,
+    `position`      = OLD.`position`,
+    `last_seen_int` = OLD.`last_update_int`;
 
 DROP TRIGGER IF EXISTS `moon_insert`;
 CREATE TRIGGER `moon_insert` AFTER INSERT ON `moon`
-FOR EACH ROW INSERT INTO `moon_overall` VALUES (
+FOR EACH ROW INSERT INTO `moon_overall` (
+    `server_id`,
+    `id`,
+    `planet_id`,
+    `size`,
+    `name`,
+    `first_seen_int`
+) VALUES (
     NEW.`server_id`,
     NEW.`id`,
     NEW.`planet_id`,
     NEW.`size`,
     NEW.`name`,
-    NEW.`first_seen`,
-    NULL
+    NEW.`first_seen_int`
 )
 ON DUPLICATE KEY UPDATE
-    `name`      = NEW.`name`,
-    `last_seen` = NULL;
+    `name`          = NEW.`name`,
+    `last_seen_int` = NULL;
 
 DROP TRIGGER IF EXISTS `moon_update`;
 CREATE TRIGGER `moon_update` AFTER UPDATE ON `moon`
-FOR EACH ROW INSERT INTO `moon_overall` VALUES (
+FOR EACH ROW INSERT INTO `moon_overall` (
+    `server_id`,
+    `id`,
+    `planet_id`,
+    `size`,
+    `name`,
+    `first_seen_int`
+) VALUES (
     NEW.`server_id`,
     NEW.`id`,
     NEW.`planet_id`,
     NEW.`size`,
     NEW.`name`,
-    NEW.`first_seen`,
-    NULL
+    NEW.`first_seen_int`
 )
 ON DUPLICATE KEY UPDATE
-    `name`      = NEW.`name`,
-    `last_seen` = NULL;
+    `name`          = NEW.`name`,
+    `last_seen_int` = NULL;
 
 DROP TRIGGER IF EXISTS `moon_delete`;
 CREATE TRIGGER `moon_delete` AFTER DELETE ON `moon`
-FOR EACH ROW INSERT INTO `moon_overall` VALUES (
+FOR EACH ROW INSERT INTO `moon_overall` (
+    `server_id`,
+    `id`,
+    `planet_id`,
+    `size`,
+    `name`,
+    `first_seen_int`
+) VALUES (
     OLD.`server_id`,
     OLD.`id`,
     OLD.`planet_id`,
     OLD.`size`,
     OLD.`name`,
-    OLD.`first_seen`,
-    NULL
+    OLD.`first_seen_int`
 )
 ON DUPLICATE KEY UPDATE
-    `name`      = OLD.`name`,
-    `last_seen` = OLD.`last_update`;
+    `name`          = OLD.`name`,
+    `last_seen_int` = OLD.`last_update_int`;

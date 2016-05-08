@@ -7,5 +7,5 @@ interface ExecutorInterface
 {
     public function run($data);
     public function finish();
-    public function clean($server_id, $last_update);
+    public function clean($server_id, $last_update_int);
 }

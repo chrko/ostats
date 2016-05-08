@@ -30,6 +30,7 @@ class DB extends \mysqli
             if (!self::$dbConn->set_charset('utf8mb4')) {
                 throw new \Exception('cannot set utf8mb4 as connection character set');
             }
+            self::$dbConn->query('SET time_zone = \'UTC\'');
         }
 
         return self::$dbConn;
@@ -47,9 +48,13 @@ class DB extends \mysqli
 
         if ($this->errno) {
             echo "Query failed\n";
-            file_put_contents('failed_queries.sql', $this->error . "\n", FILE_APPEND);
-            file_put_contents('failed_queries.sql', $this->errno . "\n", FILE_APPEND);
-            file_put_contents('failed_queries.sql', $query . "\n", FILE_APPEND);
+            file_put_contents(
+                'failed_queries.sql',
+                $this->error . "\n" .
+                $this->errno . "\n" .
+                $query . "\n",
+                FILE_APPEND
+            );
             throw new \Exception($this->error);
         }
 
