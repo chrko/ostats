@@ -17,7 +17,7 @@ class PlayerInsert extends AbstractExecutor
 
     protected function getQueryPart()
     {
-        return '(:server_id, :id, :name, :vacation, :inactive, :inactive_long, :banned, :outlaw, :admin, :last_update_int),' . "\n";
+        return '(:server_id:, :id:, :name:, :vacation:, :inactive:, :inactive_long:, :banned:, :outlaw:, :admin:, :last_update_int:),' . "\n";
     }
 
     protected function getQueryEnd()

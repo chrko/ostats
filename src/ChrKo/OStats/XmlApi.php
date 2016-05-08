@@ -519,7 +519,7 @@ class XmlApi
         array_walk($playerData, $escape);
 
         $query = 'INSERT INTO `player` (`server_id`, `id`, `name`, `last_update_int`)'
-            . ' VALUES (:server_id, :player_id, :player_name, :last_update_int)'
+            . ' VALUES (:server_id:, :player_id:, :player_name:, :last_update_int:)'
             . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `last_update_int` = VALUES(`last_update_int`)';
 
         $query = DB::namedReplace($query, $playerData);
@@ -529,7 +529,7 @@ class XmlApi
             $this->bulkQueries['member']->run($playerData);
 
             $query = 'INSERT INTO `alliance` (`server_id`, `id`, `name`, `tag`, `last_update_int`)'
-                . ' VALUES (:server_id, :alliance_id, :alliance_name, :alliance_tag, :last_update_int)'
+                . ' VALUES (:server_id:, :alliance_id:, :alliance_name:, :alliance_tag:, :last_update_int:)'
                 . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `tag` = VALUES(`tag`), `last_update_int` = VALUES(`last_update_int`)';
         } else {
             $query = 'DELETE FROM `alliance_member`'

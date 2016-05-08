@@ -35,7 +35,7 @@ class ScheduleInsert extends AbstractExecutor
      */
     protected function getQueryPart()
     {
-        return ' (:due_time_int, :server_id, :endpoint, :category, :type, :job),' . "\n";
+        return ' (:due_time_int:, :server_id:, :endpoint:, :category:, :type:, :job:),' . "\n";
     }
 
     /**

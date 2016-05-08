@@ -84,7 +84,7 @@ class Executor
                 $task['delay'] = date('H:i:s', time() - (int)$task['due_time_int']);
 
                 echo DB::namedReplace(
-                    'task :endpoint on server :server_id (:category, :type) due :due_time, :delay...',
+                    'task :endpoint on server :server_id: (:category:, :type:) due :due_time:, :delay:...',
                     $task
                 );
 

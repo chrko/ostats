@@ -54,8 +54,8 @@ class Scheduler
         $data = self::prepare($task);
 
         $query = 'SELECT `due_time_int` FROM `tasks`'
-            . ' WHERE `server_id` = :server_id AND `endpoint` = :endpoint'
-            . ' AND `category` = :category AND `type` = :type';
+            . ' WHERE `server_id` = :server_id: AND `endpoint` = :endpoint:'
+            . ' AND `category` = :category: AND `type` = :type:';
 
         $result = DB::getConn()->query(DB::namedReplace($query, $data));
 
@@ -63,7 +63,7 @@ class Scheduler
             $result->free();
             $query =
                 'INSERT INTO `tasks` (`due_time_int`, `server_id`, `endpoint`, `category`, `type`, `job`)'
-                . ' VALUES (:due_time_int, :server_id, :endpoint, :category, :type, :job)';
+                . ' VALUES (:due_time_int:, :server_id:, :endpoint:, :category:, :type:, :job:)';
 
             $query = DB::namedReplace($query, $data);
             DB::getConn()->query($query);
@@ -75,7 +75,7 @@ class Scheduler
         if (self::$forceReschedule || (int) $result_data['due_time_int'] < $task->getDueTime()) {
             $query =
                 'REPLACE INTO `tasks` (`due_time_int`, `server_id`, `endpoint`, `category`, `type`, `job`)'
-                . ' VALUES (:due_time_int, :server_id, :endpoint, :category, :type, :job)';
+                . ' VALUES (:due_time_int:, :server_id:, :endpoint:, :category:, :type:, :job:)';
 
             $query = DB::namedReplace($query, $data);
             DB::getConn()->query($query);

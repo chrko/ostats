@@ -16,7 +16,7 @@ class AllianceMemberInsert extends AbstractExecutor
 
     protected function getQueryPart()
     {
-        return '(:server_id, :alliance_id, :player_id, :last_update_int, :last_update_int),' . "\n";
+        return '(:server_id:, :alliance_id:, :player_id:, :last_update_int:, :last_update_int:),' . "\n";
     }
 
     protected function getQueryEnd()
