@@ -255,7 +255,7 @@ class XmlApi
                     $coords = explode(':', $xmlReader->getAttribute('coords'));
                     $data['planets'][] = [
                         'server_id' => $serverId,
-                        'last_update' => $lastUpdate,
+                        'last_update_int' => $lastUpdateInt,
                         'id' => $xmlReader->getAttribute('id'),
                         'name' => $xmlReader->getAttribute('name'),
                         'galaxy' => $coords[0],
@@ -272,7 +272,7 @@ class XmlApi
                     }
                     $data['moons'][] = [
                         'server_id' => $serverId,
-                        'last_update' => $lastUpdate,
+                        'last_update_int' => $lastUpdateInt,
                         'id' => $xmlReader->getAttribute('id'),
                         'planet_id' => $lastPlanetId,
                         'size' => $xmlReader->getAttribute('size'),
