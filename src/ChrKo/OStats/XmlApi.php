@@ -533,7 +533,7 @@ class XmlApi
                 . ' ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `tag` = VALUES(`tag`), `last_update_int` = VALUES(`last_update_int`)';
         } else {
             $query = 'DELETE FROM `alliance_member`'
-                . ' WHERE `server_id` = :server_id AND `player_id` = :player_id';
+                . ' WHERE `server_id` = :server_id: AND `player_id` = :player_id:';
         }
         $query = DB::namedReplace($query, $playerData);
         DB::getConn()->query($query);

@@ -6,28 +6,28 @@ ALTER TABLE `alliance_log_name` ADD `seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `
 ALTER TABLE `alliance_log_tag` ADD `seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `seen`;
 
 ALTER TABLE `alliance_overall` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
-ALTER TABLE `alliance_overall` ADD `last_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_seen`;
+ALTER TABLE `alliance_overall` ADD `last_seen_int` BIGINT NULL DEFAULT 0 AFTER `last_seen`;
 
 
 ALTER TABLE `alliance_member` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
 ALTER TABLE `alliance_member` ADD `last_update_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_update`;
 
 ALTER TABLE `alliance_member_log` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
-ALTER TABLE `alliance_member_log` ADD `last_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_seen`;
+ALTER TABLE `alliance_member_log` ADD `last_seen_int` BIGINT NULL DEFAULT 0 AFTER `last_seen`;
 
 
 ALTER TABLE `moon` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
 ALTER TABLE `moon` ADD `last_update_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_update`;
 
 ALTER TABLE `moon_overall` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
-ALTER TABLE `moon_overall` ADD `last_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_seen`;
+ALTER TABLE `moon_overall` ADD `last_seen_int` BIGINT NULL DEFAULT 0 AFTER `last_seen`;
 
 
 ALTER TABLE `planet` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
 ALTER TABLE `planet` ADD `last_update_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_update`;
 
 ALTER TABLE `planet_overall` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
-ALTER TABLE `planet_overall` ADD `last_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_seen`;
+ALTER TABLE `planet_overall` ADD `last_seen_int` BIGINT NULL DEFAULT 0 AFTER `last_seen`;
 
 ALTER TABLE `planet_relocation` ADD `seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `seen`;
 
@@ -35,7 +35,7 @@ ALTER TABLE `planet_relocation` ADD `seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `
 ALTER TABLE `player` ADD `last_update_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_update`;
 
 ALTER TABLE `player_overall` ADD `first_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `first_seen`;
-ALTER TABLE `player_overall` ADD `last_seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `last_seen`;
+ALTER TABLE `player_overall` ADD `last_seen_int` BIGINT NULL DEFAULT 0 AFTER `last_seen`;
 
 ALTER TABLE `player_log_name` ADD `seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `seen`;
 ALTER TABLE `player_log_vacation` ADD `seen_int` BIGINT NOT NULL DEFAULT 0 AFTER `seen`;
