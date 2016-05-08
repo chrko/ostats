@@ -28,11 +28,11 @@ class StatusCommand extends Command
             'SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks` WHERE ' . $where . ' GROUP BY `endpoint`');
         $dbResults['delayedTasks'] = DB::getConn()->query(
             'SELECT COUNT(*) AS `count`, `endpoint` FROM `tasks`'
-            . ' WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\' AND ' . $where
+            . ' WHERE `running` = 0 AND `due_time_int` < ' . time() . ' AND ' . $where
             . ' GROUP BY `endpoint`');
         $dbResults['delayedTime'] = DB::getConn()->query(
             'SELECT MIN(`due_time`) AS `min_due_time`, `endpoint` FROM `tasks`'
-            . ' WHERE `running` = 0 AND `due_time` < \'' . \ChrKo\OStats\DB::formatTimestamp() . '\' AND ' . $where
+            . ' WHERE `running` = 0 AND `due_time_int` < ' . time() . ' AND ' . $where
             . ' GROUP BY `endpoint`'
         );
 
