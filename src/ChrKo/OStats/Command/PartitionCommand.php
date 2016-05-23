@@ -209,7 +209,7 @@ class PartitionCommand extends Command {
 
                             $lowerBoundaryTimestamp = $lowerBoundary->getTimestamp();
                             $upperBoundaryTimestamp = $upperBoundary->getTimestamp();
-                            $sql = "DELETE FROM `${table}` PARTITION (`${dayPart['name']}`) WHERE `seen_int` >= ${lowerBoundaryTimestamp} AND `seen_int` < ${upperBoundaryTimestamp};\n";
+                            $sql = "DELETE FROM `${table}` PARTITION (`${dayPart['name']}`) WHERE `seen_int` < ${lowerBoundaryTimestamp} OR `seen_int` >= ${upperBoundaryTimestamp};\n";
 
                             $output->write(print_r($sql, TRUE));
 
