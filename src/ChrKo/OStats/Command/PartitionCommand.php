@@ -196,7 +196,25 @@ class PartitionCommand extends Command {
                         break;
                     }
                     if ($nameContains($unitOfWork['from'], 'd_') && $nameContains($unitOfWork['to'], 'w_')) {
-                        sleep(0); //TODO: reduce resolution due to day to week partition transition
+                        $dayPartsToReduce = array_filter($unitOfWork['from'], function ($val) {
+                            return strpos($val['name'], 'd_') !== FALSE;
+                        });
+                        foreach ($dayPartsToReduce as $dayPart) {
+                            $lowerBoundary = \DateTime::createFromFormat('*Ymd', $dayPart['name'], new \DateTimeZone('Etc/UTC'))
+                                ->setTime(0, 0, 0)
+                                ->setTimezone(new \DateTimeZone('Europe/Berlin'))
+                                ->setTime(3, 0, 0);
+                            $upperBoundary = (clone $lowerBoundary);
+                            $upperBoundary->setTime(4, 15, 0);
+
+                            $lowerBoundaryTimestamp = $lowerBoundary->getTimestamp();
+                            $upperBoundaryTimestamp = $upperBoundary->getTimestamp();
+                            $sql = "DELETE FROM `${table}` PARTITION (`${dayPart['name']}`) WHERE `seen_int` >= ${lowerBoundaryTimestamp} AND `seen_int` < ${upperBoundaryTimestamp};\n";
+
+                            $output->write(print_r($sql, TRUE));
+
+                            DB::getConn()->query($sql);
+                        }
                     }
 
                     $fromPartsStr = substr(array_reduce(
