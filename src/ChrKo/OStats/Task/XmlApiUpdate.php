@@ -16,7 +16,7 @@ class XmlApiUpdate implements TaskInterface
     protected $category = 0;
     protected $type = 0;
 
-    public function __construct($serverId, $endpoint, $category = 0, $type = 0, $dueTime = false)
+    public function __construct($serverId, $endpoint, $category = 0, $type = 0, $dueTime = 0)
     {
         $this->serverId = (string) $serverId;
         $this->dueTime = (int) $dueTime;
@@ -24,7 +24,7 @@ class XmlApiUpdate implements TaskInterface
         $this->category = (int) $category;
         $this->type = (int) $type;
 
-        if ($this->dueTime === false) {
+        if ($this->dueTime == 0) {
             $this->dueTime = time();
         }
 
