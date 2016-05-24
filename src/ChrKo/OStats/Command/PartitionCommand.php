@@ -209,7 +209,17 @@ class PartitionCommand extends Command {
 
                             $lowerBoundaryTimestamp = $lowerBoundary->getTimestamp();
                             $upperBoundaryTimestamp = $upperBoundary->getTimestamp();
+
                             $sql = "DELETE FROM `${table}` PARTITION (`${dayPart['name']}`) WHERE `seen_int` < ${lowerBoundaryTimestamp} OR `seen_int` >= ${upperBoundaryTimestamp};\n";
+
+                            $output->write(print_r($sql, TRUE));
+
+                            DB::getConn()->query($sql);
+
+                            $sql = "DELETE h FROM `${table}` PARTITION (`${dayPart['name']}`) as h "
+                                . "INNER JOIN (SELECT `server_id`, `id`, MIN(`seen_int`) as `min_seen_int` FROM `${table}` PARTITION (`${dayPart['name']}`) GROUP BY `server_id`, `id`) as tmp "
+                                . "ON ( h.`server_id` = tmp.`server_id` AND h.`id` = tmp.`id`) "
+                                . "WHERE h.`seen_int` <> tmp.`min_seen_int`";
 
                             $output->write(print_r($sql, TRUE));
 
