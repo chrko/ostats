@@ -214,7 +214,7 @@ class PartitionCommand extends Command {
                             $output->write(print_r($sql, TRUE));
                             DB::getConn()->query($sql);
 
-                            $sql = "ALTER TABLE `${table}` REBUILD PARTITION `${dayPart['name']}`;";
+                            $sql = "ALTER TABLE `${table}` REBUILD PARTITION `${dayPart['name']}`;\n";
                             $output->write(print_r($sql, TRUE));
                             DB::getConn()->query($sql);
 
