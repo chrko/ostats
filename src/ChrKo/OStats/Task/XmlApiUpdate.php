@@ -7,8 +7,7 @@ use ChrKo\OStats\BulkQuery\ScheduleInsert;
 use ChrKo\OStats\DB;
 use ChrKo\OStats\XmlApi;
 
-class XmlApiUpdate implements TaskInterface
-{
+class XmlApiUpdate implements TaskInterface {
     protected $dueTime = 0;
 
     protected $serverId = '';
@@ -16,8 +15,7 @@ class XmlApiUpdate implements TaskInterface
     protected $category = 0;
     protected $type = 0;
 
-    public function __construct($serverId, $endpoint, $category = 0, $type = 0, $dueTime = 0)
-    {
+    public function __construct($serverId, $endpoint, $category = 0, $type = 0, $dueTime = 0) {
         $this->serverId = (string) $serverId;
         $this->dueTime = (int) $dueTime;
         $this->endpoint = (string) $endpoint;
@@ -31,39 +29,37 @@ class XmlApiUpdate implements TaskInterface
         $this->checkArguments();
     }
 
-    public static function getAllowedArguments()
-    {
+    public static function getAllowedArguments() {
         return [
             'alliances' => [
                 'category' => [0],
-                'type' => [0],
+                'type'     => [0],
                 'interval' => 24 * 60 * 60,
             ],
-            'player' => [
+            'player'    => [
                 'category' => [0],
-                'type' => [],
+                'type'     => [],
                 'interval' => 7 * 24 * 60 * 60,
             ],
-            'players' => [
+            'players'   => [
                 'category' => [0],
-                'type' => [0],
+                'type'     => [0],
                 'interval' => 24 * 60 * 60,
             ],
-            'universe' => [
+            'universe'  => [
                 'category' => [0],
-                'type' => [0],
+                'type'     => [0],
                 'interval' => 7 * 24 * 60 * 60,
             ],
             'highscore' => [
                 'category' => [1, 2],
-                'type' => range(0, 7),
+                'type'     => range(0, 7),
                 'interval' => 1 * 60 * 60,
             ],
         ];
     }
 
-    public function run(XmlApi $xmlApi)
-    {
+    public function run(XmlApi $xmlApi) {
         $this->checkArguments();
 
         $next = clone $this;
@@ -82,15 +78,17 @@ class XmlApiUpdate implements TaskInterface
                 break;
             case 'players':
                 $data = $xmlApi->readPlayersData($this->serverId);
-                $bulkQuery = new ScheduleInsert(DB::getConn());
-                foreach ($data['players'] as $player) {
-                    $bulkQuery->run(
-                        Scheduler::prepare(
-                            new self($data['server_id'], 'player', 0, $player['id'])
-                        )
-                    );
+                if (!DISABLE_PLAYER) {
+                    $bulkQuery = new ScheduleInsert(DB::getConn());
+                    foreach ($data['players'] as $player) {
+                        $bulkQuery->run(
+                            Scheduler::prepare(
+                                new self($data['server_id'], 'player', 0, $player['id'])
+                            )
+                        );
+                    }
+                    $bulkQuery->finish();
                 }
-                $bulkQuery->finish();
                 $xmlApi->processPlayersData($data);
                 break;
             case 'highscore':
@@ -109,68 +107,61 @@ class XmlApiUpdate implements TaskInterface
         $next->save();
     }
 
-    public function getServerId()
-    {
+    public function getServerId() {
         return $this->serverId;
     }
 
-    public function setServerId($serverId)
-    {
+    public function setServerId($serverId) {
         $this->serverId = $serverId;
+
         return $this;
     }
 
-    public function getCategory()
-    {
+    public function getCategory() {
         return $this->category;
     }
 
-    public function setCategory($category)
-    {
+    public function setCategory($category) {
         $this->category = $category;
+
         return $this;
     }
 
-    public function getDueTime()
-    {
+    public function getDueTime() {
         return $this->dueTime;
     }
 
-    public function setDueTime($dueTime)
-    {
+    public function setDueTime($dueTime) {
         $this->dueTime = $dueTime;
+
         return $this;
     }
 
-    public function getEndpoint()
-    {
+    public function getEndpoint() {
         return $this->endpoint;
     }
 
-    public function setEndpoint($endpoint)
-    {
+    public function setEndpoint($endpoint) {
         $this->endpoint = $endpoint;
+
         return $this;
     }
 
-    public function getType()
-    {
+    public function getType() {
         return $this->type;
     }
 
-    public function setType($type)
-    {
+    public function setType($type) {
         $this->type = $type;
+
         return $this;
     }
 
-    public function save()
-    {
+    public function save() {
         Scheduler::queue($this);
     }
 
-    protected function checkArguments()
-    {
+    protected function checkArguments() {
         $args = self::getAllowedArguments();
 
         if (!array_key_exists($this->endpoint, $args)
