@@ -249,6 +249,22 @@ FOR EACH ROW BEGIN
             NEW.`vacation`
         );
     END IF;
+    IF OLD.`banned` <> NEW.`banned`
+    THEN
+        INSERT IGNORE INTO `player_log_banned` (
+            `server_id`,
+            `id`,
+            `prev_update_int`,
+            `seen_int`,
+            `banned`
+        ) VALUES (
+            NEW.`server_id`,
+            NEW.`id`,
+            OLD.`last_update_int`,
+            NEW.`last_update_int`,
+            NEW.`banned`
+        );
+    END IF;
 END $$
 DELIMITER ;
 
