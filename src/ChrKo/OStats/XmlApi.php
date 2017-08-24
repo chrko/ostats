@@ -578,9 +578,9 @@ class XmlApi
 
             $this->bulkQueries['player']->run($player);
 
-            if ($player['alliance_id'] != 0) {
-                $this->bulkQueries['member']->run($player);
-            }
+//            if ($player['alliance_id'] != 0) {
+//                $this->bulkQueries['member']->run($player);
+//            }
         }
 
         $this->flushBulkQueries();
