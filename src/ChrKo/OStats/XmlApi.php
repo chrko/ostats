@@ -586,7 +586,7 @@ class XmlApi
         $this->flushBulkQueries();
 
         $this->bulkQueries['player']->clean($serverId, $lastUpdateInt);
-        $this->bulkQueries['member']->clean($serverId, $lastUpdateInt);
+//        $this->bulkQueries['member']->clean($serverId, $lastUpdateInt);
     }
 
     public function processHighscoreData(array $highscoreData)
