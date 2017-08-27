@@ -4,7 +4,7 @@ CREATE TABLE `player_log_inactive` (
                     CHARACTER SET ascii NOT NULL,
   `id`              INT(10) UNSIGNED    NOT NULL,
   `seen_int`        BIGINT              NOT NULL DEFAULT 0,
-  `inactive`        TINYINT(1)          NOT NULL,
+  `inactive`        TINYINT(1)          NOT NULL COMMENT '1 inactive / 2 long inactive',
   PRIMARY KEY (`server_id`, `id`, `seen_int`)
 )
   ENGINE = InnoDB
