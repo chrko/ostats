@@ -265,6 +265,31 @@ FOR EACH ROW BEGIN
             NEW.`banned`
         );
     END IF;
+    IF OLD.`inactive` <> NEW.`inactive` OR OLD.`inactive_long` <> NEW.`inactive_long`
+    THEN
+        IF NEW.`inactive` = 1
+        THEN
+            IF NEW.`inactive_long` = 1
+            THEN
+                SET @inactive = 2;
+            ELSE
+                SET @inactive = 1;
+            END IF;
+        ELSE
+            SET @inactive = 0;
+        END IF;
+        INSERT IGNORE INTO `player_log_inactive` (
+            `server_id`,
+            `id`,
+            `seen_int`,
+            `inactive`
+        ) VALUES (
+            NEW.`server_id`,
+            NEW.`id`,
+            NEW.`last_update_int`,
+            @inactive
+        );
+    END IF;
 END $$
 DELIMITER ;
 
