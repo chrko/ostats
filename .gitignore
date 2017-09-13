@@ -2,3 +2,4 @@
 cache
 vendor
 config.php
+failed_queries.sql
