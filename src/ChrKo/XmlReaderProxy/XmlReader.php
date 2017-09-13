@@ -16,8 +16,8 @@ class XmlReader extends \XMLReader
     {
         if (!self::$guzzleClient && !self::$guzzleClient instanceof ClientInterface) {
             self::$guzzleClient = new Client([
-                'connect_timeout' => 0.4,
-                'timeout' => 1.5,
+                'connect_timeout' => 1,
+                'timeout' => 10,
                 'curl' => [
                     CURLOPT_FORBID_REUSE => false,
                 ],

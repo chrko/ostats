@@ -4,6 +4,7 @@ namespace ChrKo\OStats\Task;
 
 use ChrKo\OStats\DB;
 use ChrKo\OStats\XmlApi;
+use ChrKo\OStats\XmlApiDataProcessor;
 
 class Executor
 {
@@ -37,7 +38,7 @@ class Executor
 
         $this->whereRestriction = $whereRestriction . $this->minimalWhereRestriction;
         $this->allowRestrictionIgnorance = (bool) $allowRestrictionIgnorance;
-        $this->xmlApi = new XmlApi();
+        $this->xmlApi = XmlApiDataProcessor::getInstance();
     }
 
     public static function stop()

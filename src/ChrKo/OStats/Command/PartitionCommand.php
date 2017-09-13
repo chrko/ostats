@@ -3,6 +3,7 @@
 namespace ChrKo\OStats\Command;
 
 use ChrKo\OStats\DB;
+use ChrKo\OStats\OGame\API\XML;
 use ChrKo\OStats\Task\XmlApiUpdate;
 use Symfony\Component\Console\Command\Command;
 
@@ -112,8 +113,8 @@ class PartitionCommand extends Command {
 
         $origSteps = $steps;
 
-        foreach (XmlApiUpdate::getAllowedArguments()['highscore']['category'] as $category) {
-            foreach (XmlApiUpdate::getAllowedArguments()['highscore']['type'] as $type) {
+        foreach (XML::getAllowedArguments()['highscore']['category'] as $category) {
+            foreach (XML::getAllowedArguments()['highscore']['type'] as $type) {
                 $table = 'highscore_' . $category . '_' . $type;
                 $steps = $origSteps;
 

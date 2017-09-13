@@ -5,7 +5,8 @@ namespace ChrKo\OStats\Task;
 
 use ChrKo\OStats\BulkQuery\ScheduleInsert;
 use ChrKo\OStats\DB;
-use ChrKo\OStats\XmlApi;
+use ChrKo\OStats\OGame\API\XML;
+use ChrKo\OStats\XmlApiDataProcessor;
 
 class XmlApiUpdate implements TaskInterface {
     protected $dueTime = 0;
@@ -29,55 +30,27 @@ class XmlApiUpdate implements TaskInterface {
         $this->checkArguments();
     }
 
-    public static function getAllowedArguments() {
-        return [
-            'alliances' => [
-                'category' => [0],
-                'type'     => [0],
-                'interval' => 24 * 60 * 60,
-            ],
-            'player'    => [
-                'category' => [0],
-                'type'     => [],
-                'interval' => 7 * 24 * 60 * 60,
-            ],
-            'players'   => [
-                'category' => [0],
-                'type'     => [0],
-                'interval' => 24 * 60 * 60,
-            ],
-            'universe'  => [
-                'category' => [0],
-                'type'     => [0],
-                'interval' => 7 * 24 * 60 * 60,
-            ],
-            'highscore' => [
-                'category' => [1, 2],
-                'type'     => range(0, 7),
-                'interval' => 1 * 60 * 60,
-            ],
-        ];
-    }
+    public function run() {
+        $xmlApiDataProcessor = XmlApiDataProcessor::getInstance();
 
-    public function run(XmlApi $xmlApi) {
         $this->checkArguments();
 
         $next = clone $this;
         switch ($this->endpoint) {
             case 'alliances':
-                $data = $xmlApi->readAllianceData($this->serverId);
-                $xmlApi->processAllianceData($data);
+                $data = XML\Alliances::readData($this->serverId);
+                $xmlApiDataProcessor->processAllianceData($data);
                 break;
             case 'player':
                 try {
-                    $data = $xmlApi->readPlayerData($this->serverId, $this->type);
+                    $data = XML\Player::readData($this->serverId, $this->type);
                 } catch (\Exception $e) {
                     return;
                 }
-                $xmlApi->processPlayerData($data);
+                $xmlApiDataProcessor->processPlayerData($data);
                 break;
             case 'players':
-                $data = $xmlApi->readPlayersData($this->serverId);
+                $data = XML\Players::readData($this->serverId);
                 if (!DISABLE_PLAYER) {
                     $bulkQuery = new ScheduleInsert(DB::getConn());
                     foreach ($data['players'] as $player) {
@@ -89,21 +62,21 @@ class XmlApiUpdate implements TaskInterface {
                     }
                     $bulkQuery->finish();
                 }
-                $xmlApi->processPlayersData($data);
+                $xmlApiDataProcessor->processPlayersData($data);
                 break;
             case 'highscore':
-                $data = $xmlApi->readHighscoreData($this->serverId, $this->category, $this->type);
-                $xmlApi->processHighscoreData($data);
+                $data = XML\Highscore::readData($this->serverId, $this->category, $this->type);
+                $xmlApiDataProcessor->processHighscoreData($data);
                 break;
             case 'universe':
-                $data = $xmlApi->readUniverseData($this->serverId);
-                $xmlApi->processUniverseData($data);
+                $data = XML\Universe::readData($this->serverId);
+                $xmlApiDataProcessor->processUniverseData($data);
                 break;
             default:
                 throw new \InvalidArgumentException;
         }
 
-        $next->setDueTime($data['last_update_int'] + $this->getAllowedArguments()[$this->getEndpoint()]['interval'] + 60);
+        $next->setDueTime($data['last_update_int'] + XML::getAllowedArguments()[$this->getEndpoint()]['interval'] + 60);
         $next->save();
     }
 
@@ -162,7 +135,7 @@ class XmlApiUpdate implements TaskInterface {
     }
 
     protected function checkArguments() {
-        $args = self::getAllowedArguments();
+        $args = XML::getAllowedArguments();
 
         if (!array_key_exists($this->endpoint, $args)
             || !in_array($this->category, $args[$this->endpoint]['category'])

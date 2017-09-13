@@ -4,9 +4,10 @@ namespace ChrKo\OStats\Command;
 
 use ChrKo\OStats\BulkQuery\ScheduleInsert;
 use ChrKo\OStats\DB;
+use ChrKo\OStats\OGame\API\XML;
+use ChrKo\OStats\OGame\API\XML\Universes;
 use ChrKo\OStats\Task\Scheduler;
 use ChrKo\OStats\Task\XmlApiUpdate;
-use ChrKo\OStats\XmlApi;
 use Symfony\Component\Console\Command\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -65,7 +66,7 @@ class CreateServerCommand extends Command
         if ($input->getOption('full-country')) {
             $tmpServerIds = $serverIds;
             foreach ($tmpServerIds as $serverId) {
-                $serverIds = array_merge($serverIds, XmlApi::readLocalServers($serverId));
+                $serverIds = array_merge($serverIds, Universes::readData($serverId));
             }
         }
 
@@ -83,7 +84,7 @@ class CreateServerCommand extends Command
         $bulkQuery = new ScheduleInsert(DB::getConn());
 
         foreach ($serverIds as $serverId) {
-            foreach (XmlApiUpdate::getAllowedArguments() as $endpoint => $details) {
+            foreach (XML::getAllowedArguments() as $endpoint => $details) {
                 if (count($input->getOption('endpoint')) > 0 && !in_array($endpoint, $input->getOption('endpoint'))) {
                     continue;
                 }
