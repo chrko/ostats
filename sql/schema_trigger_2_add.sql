@@ -1,4 +1,3 @@
-DROP TRIGGER IF EXISTS `alliance_member_insert`;
 CREATE TRIGGER `alliance_member_insert` AFTER INSERT ON `alliance_member`
 FOR EACH ROW INSERT INTO `alliance_member_log` (
     `server_id`,
@@ -13,7 +12,6 @@ FOR EACH ROW INSERT INTO `alliance_member_log` (
 )
 ON DUPLICATE KEY UPDATE `last_seen_int` = NULL;
 
-DROP TRIGGER IF EXISTS `alliance_member_delete`;
 CREATE TRIGGER `alliance_member_delete` AFTER DELETE ON `alliance_member`
 FOR EACH ROW INSERT INTO `alliance_member_log` (
     `server_id`,
@@ -31,7 +29,6 @@ FOR EACH ROW INSERT INTO `alliance_member_log` (
 ON DUPLICATE KEY UPDATE
     `last_seen_int` = OLD.`last_update_int`;
 
-DROP TRIGGER IF EXISTS `alliance_insert`;
 CREATE TRIGGER `alliance_insert` AFTER INSERT ON `alliance`
 FOR EACH ROW INSERT INTO `alliance_overall` (
     `server_id`,
@@ -57,13 +54,11 @@ ON DUPLICATE KEY UPDATE
     `logo`          = NEW.`logo`,
     `last_seen_int` = NULL;
 
-DROP TRIGGER IF EXISTS `alliance_delete`;
 CREATE TRIGGER `alliance_delete` AFTER DELETE ON `alliance`
 FOR EACH ROW UPDATE `alliance_overall`
 SET `last_seen_int` = OLD.`last_update_int`
 WHERE `id` = OLD.`id` AND `server_id` = OLD.`server_id`;
 
-DROP TRIGGER IF EXISTS `alliance_update`;
 DELIMITER $$
 CREATE TRIGGER `alliance_update` AFTER UPDATE ON `alliance`
 FOR EACH ROW BEGIN
@@ -161,7 +156,6 @@ FOR EACH ROW BEGIN
 END $$
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS `player_insert`;
 CREATE TRIGGER `player_insert` AFTER INSERT ON `player`
 FOR EACH ROW INSERT INTO `player_overall` (
     `server_id`,
@@ -196,14 +190,12 @@ ON DUPLICATE KEY UPDATE
     `admin`         = NEW.`admin`,
     `last_seen_int` = NULL;
 
-DROP TRIGGER IF EXISTS `player_delete`;
 CREATE TRIGGER `player_delete` AFTER DELETE ON `player`
 FOR EACH ROW UPDATE `player_overall`
 SET `last_seen_int` = OLD.`last_update_int`
 WHERE `id` = OLD.`id` AND `server_id` = OLD.`server_id`;
 
 
-DROP TRIGGER IF EXISTS `player_update`;
 DELIMITER $$
 CREATE TRIGGER `player_update` AFTER UPDATE ON `player`
 FOR EACH ROW BEGIN
@@ -293,7 +285,6 @@ FOR EACH ROW BEGIN
 END $$
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS `planet_insert`;
 CREATE TRIGGER `planet_insert` AFTER INSERT ON `planet`
 FOR EACH ROW INSERT INTO `planet_overall` (
     `server_id`,
@@ -321,7 +312,6 @@ ON DUPLICATE KEY UPDATE
     `position`      = NEW.`position`,
     `last_seen_int` = NULL;
 
-DROP TRIGGER IF EXISTS `planet_update`;
 DELIMITER $$
 CREATE TRIGGER `planet_update` AFTER UPDATE ON `planet`
 FOR EACH ROW BEGIN
@@ -380,7 +370,6 @@ FOR EACH ROW BEGIN
 END $$
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS `planet_delete`;
 CREATE TRIGGER `planet_delete` AFTER DELETE ON `planet`
 FOR EACH ROW INSERT INTO `planet_overall` (
     `server_id`,
@@ -410,7 +399,6 @@ ON DUPLICATE KEY UPDATE
     `position`      = OLD.`position`,
     `last_seen_int` = OLD.`last_update_int`;
 
-DROP TRIGGER IF EXISTS `moon_insert`;
 CREATE TRIGGER `moon_insert` AFTER INSERT ON `moon`
 FOR EACH ROW INSERT INTO `moon_overall` (
     `server_id`,
@@ -431,7 +419,6 @@ ON DUPLICATE KEY UPDATE
     `name`          = NEW.`name`,
     `last_seen_int` = NULL;
 
-DROP TRIGGER IF EXISTS `moon_update`;
 CREATE TRIGGER `moon_update` AFTER UPDATE ON `moon`
 FOR EACH ROW INSERT INTO `moon_overall` (
     `server_id`,
@@ -452,7 +439,6 @@ ON DUPLICATE KEY UPDATE
     `name`          = NEW.`name`,
     `last_seen_int` = NULL;
 
-DROP TRIGGER IF EXISTS `moon_delete`;
 CREATE TRIGGER `moon_delete` AFTER DELETE ON `moon`
 FOR EACH ROW INSERT INTO `moon_overall` (
     `server_id`,

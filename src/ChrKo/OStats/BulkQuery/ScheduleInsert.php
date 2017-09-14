@@ -23,7 +23,7 @@ class ScheduleInsert extends AbstractExecutor
      */
     protected function getQueryStart()
     {
-        $end = 'INTO `tasks` (`due_time_int`, `server_id`, `endpoint`, `category`, `type`, `job`) VALUES' . "\n";
+        $end = 'INTO `tasks` (`due_time_int`, `job_type`, `slug`, `job`) VALUES' . "\n";
         if (self::$forceReschedule) {
             return 'REPLACE ' . $end;
         }
@@ -35,7 +35,7 @@ class ScheduleInsert extends AbstractExecutor
      */
     protected function getQueryPart()
     {
-        return ' (:due_time_int:, :server_id:, :endpoint:, :category:, :type:, :job:),' . "\n";
+        return ' (:due_time_int:, :job_type:, :slug:, :job:),' . "\n";
     }
 
     /**

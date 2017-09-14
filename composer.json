@@ -19,6 +19,8 @@
   },
   "require": {
     "symfony/console": "^3.3",
+    "symfony/finder": "^3.3",
+    "symfony/process": "^3.3",
     "guzzlehttp/guzzle": "^6.1"
   }
 }

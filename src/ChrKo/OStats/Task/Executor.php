@@ -3,11 +3,9 @@
 namespace ChrKo\OStats\Task;
 
 use ChrKo\OStats\DB;
-use ChrKo\OStats\XmlApi;
 use ChrKo\OStats\XmlApiDataProcessor;
 
-class Executor
-{
+class Executor {
     /**
      * @var bool
      */
@@ -24,30 +22,22 @@ class Executor
      * @var bool
      */
     protected $allowRestrictionIgnorance = true;
-    /**
-     * @var XmlApi
-     */
-    protected $xmlApi;
 
-    public function __construct($whereRestriction = '', $allowRestrictionIgnorance = true)
-    {
+    public function __construct($whereRestriction = '', $allowRestrictionIgnorance = true) {
         if (!is_string($whereRestriction)) {
             throw new \InvalidArgumentException;
         }
-        $this->minimalWhereRestriction = DISABLE_PLAYER ? ' AND `endpoint` != \'player\' ' : '';
+        $this->minimalWhereRestriction = DISABLE_PLAYER ? ' AND `job_type` != \'xml-player\' ' : '';
 
         $this->whereRestriction = $whereRestriction . $this->minimalWhereRestriction;
         $this->allowRestrictionIgnorance = (bool) $allowRestrictionIgnorance;
-        $this->xmlApi = XmlApiDataProcessor::getInstance();
     }
 
-    public static function stop()
-    {
+    public static function stop() {
         self::$stop = true;
     }
 
-    public function work()
-    {
+    public function work() {
         $where = $this->whereRestriction;
         $emptied = false;
         while (true) {
@@ -65,7 +55,7 @@ class Executor
 
             $db = DB::getConn();
 
-            $sql = 'SELECT `id`, `due_time_int`, `server_id`, `endpoint`, `category`, `type`, `job` FROM `tasks` WHERE `running` = 0 AND `due_time_int` <= ' . time() . ' ' . $where
+            $sql = 'SELECT `id`, `due_time_int`, `job_type`, `slug`, `job` FROM `tasks` WHERE `running` = 0 AND `due_time_int` <= ' . time() . ' ' . $where
                 . ' ORDER BY `due_time_int` ASC LIMIT 1;';
             $result = $db->query($sql);
 
@@ -83,17 +73,17 @@ class Executor
                 };
 
                 $task['due_time'] = DB::formatTimestamp($task['due_time_int']);
-                $task['delay'] = date('H:i:s', time() - (int)$task['due_time_int']);
+                $task['delay'] = date('H:i:s', time() - (int) $task['due_time_int']);
 
                 echo DB::namedReplace(
-                    'task :endpoint: on server :server_id: (:category:, :type:) due :due_time:, :delay:...',
+                    'task :job_type: on server :slug: due :due_time:, :delay:...',
                     $task
                 );
 
                 try {
                     $job = unserialize($task['job']);
                     if ($job instanceof TaskInterface) {
-                        $job->run($this->xmlApi);
+                        $job->run();
                     } else {
                         echo ' ERROR INVALID TASK';
                     }

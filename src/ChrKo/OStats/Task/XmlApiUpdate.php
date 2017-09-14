@@ -130,6 +130,20 @@ class XmlApiUpdate implements TaskInterface {
         return $this;
     }
 
+    public function getSlug() {
+        return sprintf(
+            '%s-%s-%u-%u',
+            $this->getServerId(),
+            $this->getEndpoint(),
+            $this->getCategory(),
+            $this->getType()
+        );
+    }
+
+    public function getJobType() {
+        return 'xml-'.$this->getEndpoint();
+    }
+
     public function save() {
         Scheduler::queue($this);
     }
