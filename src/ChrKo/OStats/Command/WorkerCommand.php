@@ -24,18 +24,6 @@ class WorkerCommand extends Command
                 'Filter tasks by these specified endpoints'
             )
             ->addOption(
-                'category',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'Filter tasks by this category'
-            )
-            ->addOption(
-                'type',
-                null,
-                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                'Filter tasks by these types'
-            )
-            ->addOption(
                 'allow-restriction-ignorance',
                 'f',
                 InputOption::VALUE_NONE,
@@ -48,32 +36,13 @@ class WorkerCommand extends Command
         $whereRestriction = '';
 
         $endpoints = $input->getArgument('endpoints');
-        $category = $input->getOption('category');
-        $types = $input->getOption('type');
 
         if (is_array($endpoints) && count($endpoints) > 0) {
             $whereRestriction .= ' AND (';
             $tmp = '';
             foreach ($endpoints as $endpoint) {
                 $endpoint = DB::getConn()->real_escape_string($endpoint);
-                $tmp .= " OR `endpoint` = '${endpoint}'";
-            }
-            $whereRestriction .= substr($tmp, 4);
-            $whereRestriction .= ') ';
-            unset($tmp);
-        }
-
-        if ($category !== null) {
-            $category = DB::getConn()->real_escape_string($category);
-            $whereRestriction .= " AND `category` = '${category}' ";
-        }
-
-        if (is_array($types) && count($types) > 0) {
-            $whereRestriction .= ' AND (';
-            $tmp = '';
-            foreach ($types as $type) {
-                $type = DB::getConn()->real_escape_string($type);
-                $tmp .= " OR `type` = '${type}'";
+                $tmp .= " OR `job_type` = 'xml-${endpoint}'";
             }
             $whereRestriction .= substr($tmp, 4);
             $whereRestriction .= ') ';
