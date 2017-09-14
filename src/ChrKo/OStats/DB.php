@@ -55,4 +55,25 @@ class DB extends \mysqli {
 
         return $result;
     }
+
+    public function multi_query($query) {
+        $results = [];
+        $errnos = [];
+        parent::multi_query($query);
+
+        do {
+            $result = $this->store_result();
+            $results[] = $result;
+            $errnos[] = $this->errno;
+
+            if ($result instanceof \mysqli_result) {
+                $result->free();
+            }
+        } while ($this->next_result());
+
+        var_dump($results, $errnos);
+
+        new \Exception();
+        return $results;
+    }
 }

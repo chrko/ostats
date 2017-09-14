@@ -5,8 +5,7 @@ namespace ChrKo\OStats\Task;
 
 use ChrKo\OStats\DB;
 
-class Scheduler
-{
+class Scheduler {
     /**
      * @var bool
      */
@@ -16,13 +15,12 @@ class Scheduler
      * @param \ChrKo\OStats\Task\TaskInterface $task
      * @return array
      */
-    public static function prepare(TaskInterface $task)
-    {
+    public static function prepare(TaskInterface $task) {
         $data = [
             'due_time_int' => $task->getDueTime(),
-            'job_type' => $task->getJobType(),
-            'slug' => $task->getSlug(),
-            'job' => serialize($task),
+            'job_type'     => $task->getJobType(),
+            'slug'         => $task->getSlug(),
+            'job'          => serialize($task),
         ];
 
         array_walk($data, function (&$v, $k) {
@@ -43,10 +41,10 @@ class Scheduler
 
     /**
      * @param \ChrKo\OStats\Task\TaskInterface $task
+     * @param bool $forceReschedule
      * @throws \Exception
      */
-    public static function queue(TaskInterface $task)
-    {
+    public static function queue(TaskInterface $task, $forceReschedule = false) {
         $data = self::prepare($task);
 
         $query = 'SELECT `due_time_int` FROM `tasks`'
@@ -67,7 +65,7 @@ class Scheduler
 
         $result_data = $result->fetch_assoc();
 
-        if (self::$forceReschedule || (int) $result_data['due_time_int'] < $task->getDueTime()) {
+        if ($forceReschedule || self::$forceReschedule || (int) $result_data['due_time_int'] < $task->getDueTime()) {
             $query =
                 'REPLACE INTO `tasks` (`due_time_int`, `job_type`, `slug`, `job`)'
                 . ' VALUES (:due_time_int:, :job_type:, :slug:, :job:)';

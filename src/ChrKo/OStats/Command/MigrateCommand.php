@@ -7,11 +7,15 @@ use ChrKo\OStats\DB;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Process\ProcessBuilder;
 
 class MigrateCommand extends Command {
+    const TRIGGER_DROP_FILE = 'schema_trigger_1_drop.sql';
+    const TRIGGER_ADD_FILE = 'schema_trigger_2_add.sql';
+
     protected function configure() {
         $this
             ->setName('gt:migrate');
@@ -33,6 +37,14 @@ class MigrateCommand extends Command {
         $process->mustRun();
     }
 
+    public static function getSingleFileByName($name) {
+        $finder = new Finder();
+        $finder->in(SQL_MIGRATIONS_DIR)->files()->name($name);
+        assert($finder->count() == 1);
+
+        return iterator_to_array($finder, false)[0];
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output) {
         $finder = new Finder();
 
@@ -52,25 +64,26 @@ class MigrateCommand extends Command {
         $todo = array_diff_key($files, array_flip($previouslyDone), ['schema_trigger.sql' => 0]);
         ksort($todo);
 
+        if (count($todo) == 0) {
+            $output->writeln('<info>Nothing todo.</info>');
+            return;
+        }
+
+        $output->writeln('<info>There are ' . count($todo) . ' migrations todo.</info>');
+        foreach (array_keys($todo) as $index => $key) {
+            $output->writeln("<comment>${index}: ${key}</comment>");
+        }
+        $helper = $this->getHelper('question');
+        $question = new ConfirmationQuestion('Proceed with the migrations? (y/N) ', false);
+
+        if (!$helper->ask($input, $output, $question)) {
+            $output->writeln('<error>you have aborted applying the migrations</error>');
+            return;
+        }
+
         $doneStmt = 'INSERT INTO `schema_history` (migration, deploy_time_int) VALUES (\':migration:\', :deploy_time_int:)';
 
-        $finder = new Finder();
-        $finder->in(SQL_MIGRATIONS_DIR)->files()->name('schema_trigger*.sql');
-        if ($finder->count() != 2) {
-            throw new \Exception();
-        }
-
-        $files = [];
-        foreach ($finder as $file) {
-            $files[] = $file;
-        }
-        usort($files, function (SplFileInfo $a, SplFileInfo $b) {
-            return -1 * strcmp($a->getFilename(), $b->getFilename());
-        });
-
-        $drops = array_pop($files);
-
-
+        $drops = self::getSingleFileByName(self::TRIGGER_DROP_FILE);
         $output->writeln('doing ' . $drops->getFilename());
         self::executeSqlFile($drops);
         $output->writeln('done ' . $drops->getFilename());
@@ -91,7 +104,7 @@ class MigrateCommand extends Command {
             $output->writeln('logged ' . $migration->getFilename());
         }
 
-        $creates = array_pop($files);
+        $creates = self::getSingleFileByName(self::TRIGGER_ADD_FILE);
 
         $output->writeln('doing ' . $creates->getFilename());
         self::executeSqlFile($creates);

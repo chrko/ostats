@@ -14,7 +14,7 @@ use ChrKo\XmlReaderProxy\Exceptions\UnknownElementException;
 use ChrKo\XmlReaderProxy\XmlReader;
 
 class Universes {
-    const UPDATE_INTERVAL = 24 * 60 * 60;
+    const UPDATE_INTERVAL = 6 * 60 * 60;
 
     public static function readData($serverId) {
         $xml = new XmlReader();
@@ -25,6 +25,8 @@ class Universes {
         if (!$xml->name == 'universes') {
             throw new UnknownElementException('universes', '');
         }
+        $lastUpdateInt = (int) $xml->getAttribute('timestamp');
+        $lastUpdate = date('Y-m-d H:i:s', $lastUpdateInt);
 
         $serverIds = [];
 
@@ -36,6 +38,11 @@ class Universes {
             $serverIds[] = XML::getServerIdByBase($xml->getAttribute('href'));
         }
 
-        return $serverIds;
+        return [
+            'server_id'       => $serverId,
+            'last_update'     => $lastUpdate,
+            'last_update_int' => $lastUpdateInt,
+            'server_ids'      => $serverIds,
+        ];
     }
 }

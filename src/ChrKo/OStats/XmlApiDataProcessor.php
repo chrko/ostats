@@ -4,6 +4,8 @@ namespace ChrKo\OStats;
 
 use ChrKo\OStats\BulkQuery;
 use ChrKo\OStats\OGame\API\XML;
+use ChrKo\OStats\Task\Scheduler;
+use ChrKo\OStats\Task\XmlApiUpdate;
 
 class XmlApiDataProcessor {
     /**
@@ -30,6 +32,10 @@ class XmlApiDataProcessor {
 
         $this->bulkQueries['planet'] = new BulkQuery\PlanetInsert(DB::getConn());
         $this->bulkQueries['moon'] = new BulkQuery\MoonInsert(DB::getConn());
+
+        $this->bulkQueries['tasks'] = new BulkQuery\ScheduleInsert(DB::getConn());
+        $this->bulkQueries['tasks_force'] = new BulkQuery\ScheduleInsert(DB::getConn());
+        $this->bulkQueries['tasks_force']->forceReschedule = true;
     }
 
     public static function getInstance() {
@@ -275,5 +281,41 @@ class XmlApiDataProcessor {
 
         $this->bulkQueries['planet']->clean($serverId, $lastUpdateInt);
         $this->bulkQueries['moon']->clean($serverId, $lastUpdateInt);
+    }
+
+    public function processUniversesData(array $universesData) {
+        $ownServerId = $universesData['server_id'];
+        $lastUpdateInt = $universesData['last_update_int'];
+
+        $serverIds = $universesData['server_ids'];
+
+        foreach ($serverIds as $serverId) {
+            $task = new XmlApiUpdate($serverId, 'universes', 0, 0, 0);
+            if ($serverId == $ownServerId) {
+                if ($lastUpdateInt + XML\Universes::UPDATE_INTERVAL > time() + floor(XML\Universes::UPDATE_INTERVAL / 2)) {
+                    $nextDueTime = $lastUpdateInt + XML\Universes::UPDATE_INTERVAL;
+                } else {
+                    $nextDueTime = time() + XML\Universes::UPDATE_INTERVAL;
+                }
+                $task->setDueTime($nextDueTime);
+                $this->bulkQueries['tasks_force']->run(Scheduler::prepare($task));
+            } else {
+                $this->bulkQueries['tasks']->run(Scheduler::prepare($task));
+            }
+
+            foreach (XML::getAllowedArguments() as $endpoint => $details) {
+                $categories = $details['category'];
+                $types = $details['type'];
+                foreach ($categories as $category) {
+                    foreach ($types as $type) {
+                        $this->bulkQueries['tasks']->run(Scheduler::prepare(
+                            new XmlApiUpdate($serverId, $endpoint, $category, $type)
+                        ));
+                    }
+                }
+            }
+        }
+
+        $this->flushBulkQueries();
     }
 }

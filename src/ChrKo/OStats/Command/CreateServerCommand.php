@@ -5,7 +5,6 @@ namespace ChrKo\OStats\Command;
 use ChrKo\OStats\BulkQuery\ScheduleInsert;
 use ChrKo\OStats\DB;
 use ChrKo\OStats\OGame\API\XML;
-use ChrKo\OStats\OGame\API\XML\Universes;
 use ChrKo\OStats\Task\Scheduler;
 use ChrKo\OStats\Task\XmlApiUpdate;
 use Symfony\Component\Console\Command\Command;
@@ -15,10 +14,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class CreateServerCommand extends Command
-{
-    protected function configure()
-    {
+class CreateServerCommand extends Command {
+    protected function configure() {
         $this
             ->setName('gt:server:create')
             ->addArgument(
@@ -59,20 +56,19 @@ class CreateServerCommand extends Command
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output) {
         $serverIds = $input->getArgument('server_id');
 
         if ($input->getOption('full-country')) {
             $tmpServerIds = $serverIds;
             foreach ($tmpServerIds as $serverId) {
-                $serverIds = array_merge($serverIds, Universes::readData($serverId));
+                $serverIds = array_merge($serverIds, XML\Universes::readData($serverId)['server_']);
             }
         }
 
+        $bulkScheduler = new ScheduleInsert(DB::getConn());
         if ($input->getOption('force-queue')) {
-            Scheduler::$forceReschedule = true;
-            ScheduleInsert::$forceReschedule = true;
+            $bulkScheduler->forceReschedule = true;
         }
 
         $serverIds = array_unique($serverIds);
@@ -80,8 +76,6 @@ class CreateServerCommand extends Command
         $count = 0;
         $interval = $input->getOption('schedule-delay');
         $start = time();
-
-        $bulkQuery = new ScheduleInsert(DB::getConn());
 
         foreach ($serverIds as $serverId) {
             foreach (XML::getAllowedArguments() as $endpoint => $details) {
@@ -99,7 +93,7 @@ class CreateServerCommand extends Command
                         if (count($input->getOption('type')) > 0 && !in_array($type, $input->getOption('type'))) {
                             continue;
                         }
-                        $bulkQuery->run(Scheduler::prepare(
+                        $bulkScheduler->run(Scheduler::prepare(
                             new XmlApiUpdate($serverId, $endpoint, $category, $type, $start + $count * $interval)
                         ));
                         $count++;
@@ -108,6 +102,6 @@ class CreateServerCommand extends Command
             }
         }
 
-        $bulkQuery->finish();
+        $bulkScheduler->finish();
     }
 }

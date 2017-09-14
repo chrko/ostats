@@ -2,8 +2,6 @@
 
 namespace ChrKo\OStats\OGame\API;
 
-use ChrKo\OStats\OGame\API\XML\Highscore;
-
 class XML {
     private static $endpoints = [
         'alliances',

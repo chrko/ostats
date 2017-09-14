@@ -72,12 +72,16 @@ class XmlApiUpdate implements TaskInterface {
                 $data = XML\Universe::readData($this->serverId);
                 $xmlApiDataProcessor->processUniverseData($data);
                 break;
+            case 'universes':
+                $data = XML\Universes::readData($this->serverId);
+                $xmlApiDataProcessor->processUniversesData($data);
+                break;
             default:
                 throw new \InvalidArgumentException;
         }
 
         $next->setDueTime($data['last_update_int'] + XML::getAllowedArguments()[$this->getEndpoint()]['interval'] + 60);
-        $next->save();
+        Scheduler::queue($next);
     }
 
     public function getServerId() {
@@ -141,11 +145,7 @@ class XmlApiUpdate implements TaskInterface {
     }
 
     public function getJobType() {
-        return 'xml-'.$this->getEndpoint();
-    }
-
-    public function save() {
-        Scheduler::queue($this);
+        return 'xml-' . $this->getEndpoint();
     }
 
     protected function checkArguments() {
