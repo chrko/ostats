@@ -8,6 +8,7 @@ class XML {
         'highscore',
         'player',
         'players',
+        'serverData',
         'universe',
         'universes',
     ];

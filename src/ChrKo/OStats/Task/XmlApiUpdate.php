@@ -68,6 +68,10 @@ class XmlApiUpdate implements TaskInterface {
                 $data = XML\Highscore::readData($this->serverId, $this->category, $this->type);
                 $xmlApiDataProcessor->processHighscoreData($data);
                 break;
+            case 'serverData':
+                $data = XML\ServerData::readData($this->serverId);
+                $xmlApiDataProcessor->processServerData($data);
+                break;
             case 'universe':
                 $data = XML\Universe::readData($this->serverId);
                 $xmlApiDataProcessor->processUniverseData($data);

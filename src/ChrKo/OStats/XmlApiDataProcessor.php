@@ -239,6 +239,129 @@ class XmlApiDataProcessor {
         $bulkQuery->finish()->clean($serverId, $lastUpdateInt);
     }
 
+    public function processServerData(array $serverData) {
+        $insertSql = <<<SQL
+INSERT IGNORE INTO `server_data` (
+    `server_id`,
+    `name`,
+    `number`,
+    `language`,
+    `timezone`,
+    `timezoneOffset`,
+    `domain`,
+    `version`,
+    `speed`,
+    `speedFleet`,
+    `galaxies`,
+    `systems`,
+    `acs`,
+    `rapidFire`,
+    `defToTF`,
+    `debrisFactor`,
+    `debrisFactorDef`,
+    `repairFactor`,
+    `newbieProtectionLimit`,
+    `newbieProtectionHigh`,
+    `topScore`,
+    `bonusFields`,
+    `donutGalaxy`,
+    `donutSystem`,
+    `wfEnabled`,
+    `wfMinimumRessLost`,
+    `wfMinimumLossPercentage`,
+    `wfBasicPercentageRepairable`,
+    `globalDeuteriumSaveFactor`,
+    `seen_int`
+) VALUES (
+    :server_id:,
+    :name:,
+    :number:,
+    :language:,
+    :timezone:,
+    :timezoneOffset:,
+    :domain:,
+    :version:,
+    :speed:,
+    :speedFleet:,
+    :galaxies:,
+    :systems:,
+    :acs:,
+    :rapidFire:,
+    :defToTF:,
+    :debrisFactor:,
+    :debrisFactorDef:,
+    :repairFactor:,
+    :newbieProtectionLimit:,
+    :newbieProtectionHigh:,
+    :topScore:,
+    :bonusFields:,
+    :donutGalaxy:,
+    :donutSystem:,
+    :wfEnabled:,
+    :wfMinimumRessLost:,
+    :wfMinimumLossPercentage:,
+    :wfBasicPercentageRepairable:,
+    :globalDeuteriumSaveFactor:,
+    :seen_int:
+);
+SQL;
+        $escape = function (&$v, $k) {
+            switch ($k) {
+                case 'server_id':
+                case 'name':
+                case 'language':
+                case 'timezone':
+                case 'domain':
+                case 'version':
+                    $v = '\'' . DB::getConn()->real_escape_string($v) . '\'';
+                    break;
+                case 'timezoneOffset':
+                case 'number':
+                case 'speed':
+                case 'speedFleet':
+                case 'galaxies':
+                case 'systems':
+                case 'newbieProtectionLimit':
+                case 'newbieProtectionHigh':
+                case 'topScore':
+                case 'bonusFields':
+                case 'wfMinimumRessLost':
+                case 'wfMinimumLossPercentage':
+                case 'wfBasicPercentageRepairable':
+                case 'seen_int':
+                    $v = (string) (int) $v;
+                    break;
+                case 'acs':
+                case 'rapidFire':
+                case 'defToTF':
+                case 'donutGalaxy':
+                case 'donutSystem':
+                case 'wfEnabled':
+                    $v = (string) ((bool) $v) ? 1 : 0;
+                    break;
+                case 'debrisFactor':
+                case 'debrisFactorDef':
+                case 'repairFactor':
+                case 'globalDeuteriumSaveFactor':
+                    $v = (string) (double) $v;
+                    break;
+            }
+        };
+
+        $data = $serverData['server_data'];
+        $data['server_id'] = $serverData['server_id'];
+        $data['seen_int'] = $serverData['last_update_int'];
+
+        array_walk($data, $escape);
+
+        if (!array_key_exists('name', $data)) {
+            $data['name'] = 'NULL';
+        }
+
+        $sql = DB::namedReplace($insertSql, $data);
+        DB::getConn()->query($sql);
+    }
+
     public function processUniverseData(array $universeData) {
         $serverId = $universeData['server_id'];
         $lastUpdateInt = $universeData['last_update_int'];

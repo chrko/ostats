@@ -62,7 +62,7 @@ class CreateServerCommand extends Command {
         if ($input->getOption('full-country')) {
             $tmpServerIds = $serverIds;
             foreach ($tmpServerIds as $serverId) {
-                $serverIds = array_merge($serverIds, XML\Universes::readData($serverId)['server_']);
+                $serverIds = array_merge($serverIds, XML\Universes::readData($serverId)['server_ids']);
             }
         }
 
