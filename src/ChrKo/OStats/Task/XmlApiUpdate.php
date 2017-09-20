@@ -84,7 +84,17 @@ class XmlApiUpdate implements TaskInterface {
                 throw new \InvalidArgumentException;
         }
 
-        $next->setDueTime($data['last_update_int'] + XML::getAllowedArguments()[$this->getEndpoint()]['interval'] + 60);
+        $lastUpdateInt = $data['last_update_int'];
+        $interval = XML::getAllowedArguments()[$this->getEndpoint()]['interval'] + 60;
+        if ($next->endpoint != 'serverData'
+            || ($lastUpdateInt + $interval) > (time() + floor($interval / 2))
+        ) {
+            $nextDueTime = $lastUpdateInt + $interval;
+        } else {
+            $nextDueTime = time() + $interval;
+        }
+
+        $next->setDueTime($nextDueTime);
         Scheduler::queue($next);
     }
 
