@@ -1,12 +1,12 @@
 CREATE VIEW `server_data_public`  AS
   SELECT *
   FROM `server_data`
-  WHERE NOT (`server_data`.`server_id` LIKE 'de6__' AND `server_data`.`server_id` LIKE 'de7__');
+  WHERE NOT (`server_data`.`server_id` LIKE 'de6__' OR `server_data`.`server_id` LIKE 'de7__');
 
 CREATE VIEW `server_data_tests`  AS
   SELECT *
   FROM `server_data`
-  WHERE (`server_data`.`server_id` LIKE 'de6__' AND `server_data`.`server_id` LIKE 'de7__');
+  WHERE (`server_data`.`server_id` LIKE 'de6__' OR `server_data`.`server_id` LIKE 'de7__');
 
 
 CREATE VIEW `server_data_public_last_entry` AS
