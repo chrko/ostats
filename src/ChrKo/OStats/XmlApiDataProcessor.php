@@ -271,6 +271,8 @@ INSERT IGNORE INTO `server_data` (
     `wfMinimumLossPercentage`,
     `wfBasicPercentageRepairable`,
     `globalDeuteriumSaveFactor`,
+    `bashlimit`,
+    `probeCargo`,
     `seen_int`
 ) VALUES (
     :server_id:,
@@ -302,9 +304,17 @@ INSERT IGNORE INTO `server_data` (
     :wfMinimumLossPercentage:,
     :wfBasicPercentageRepairable:,
     :globalDeuteriumSaveFactor:,
+    :bashlimit:,
+    :probeCargo:,
     :seen_int:
 );
 SQL;
+        $defaultNullColumns = [
+            'name',
+            'bashlimit',
+            'probeCargo',
+        ];
+
         $escape = function (&$v, $k) {
             switch ($k) {
                 case 'server_id':
@@ -328,6 +338,8 @@ SQL;
                 case 'wfMinimumRessLost':
                 case 'wfMinimumLossPercentage':
                 case 'wfBasicPercentageRepairable':
+                case 'bashlimit':
+                case 'probeCargo':
                 case 'seen_int':
                     $v = (string) (int) $v;
                     break;
@@ -354,8 +366,10 @@ SQL;
 
         array_walk($data, $escape);
 
-        if (!array_key_exists('name', $data)) {
-            $data['name'] = 'NULL';
+        foreach ($defaultNullColumns as $column) {
+            if (!array_key_exists($column, $data)) {
+                $data[$column] = 'NULL';
+            }
         }
 
         $sql = DB::namedReplace($insertSql, $data);

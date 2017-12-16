@@ -74,6 +74,8 @@ class ServerData {
             'wfMinimumLossPercentage'     => $int,
             'wfBasicPercentageRepairable' => $int,
             'globalDeuteriumSaveFactor'   => $double,
+            'bashlimit'                   => $int,
+            'probeCargo'                  => $int,
         ];
 
         while ($xmlReader->read(false)) {
