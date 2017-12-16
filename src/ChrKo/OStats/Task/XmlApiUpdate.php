@@ -86,7 +86,7 @@ class XmlApiUpdate implements TaskInterface {
 
         $lastUpdateInt = $data['last_update_int'];
         $interval = XML::getAllowedArguments()[$this->getEndpoint()]['interval'] + 60;
-        if ($next->endpoint != 'serverData'
+        if ($next->getEndpoint() != 'serverData'
             || ($lastUpdateInt + $interval) > (time() + floor($interval / 2))
         ) {
             $nextDueTime = $lastUpdateInt + $interval;
