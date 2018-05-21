@@ -18,7 +18,7 @@ class XML {
             throw new \Exception;
         };
 
-        $base = "http://s${matches[2]}-${matches[1]}.ogame.gameforge.com/";
+        $base = "https://s${matches[2]}-${matches[1]}.ogame.gameforge.com/";
 
         return $base;
     }
