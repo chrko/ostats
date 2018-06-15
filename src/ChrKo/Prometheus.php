@@ -30,7 +30,11 @@ class Prometheus
     public static function getRegistry(): CollectorRegistry
     {
         if (!self::$registry) {
-            return self::$registry = new CollectorRegistry(new Redis());
+            return self::$registry = new CollectorRegistry(new Redis(
+                [
+                    'persistent_connections' => true
+                ]
+            ));
         }
         return self::$registry;
     }
