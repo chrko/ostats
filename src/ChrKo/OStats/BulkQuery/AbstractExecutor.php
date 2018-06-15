@@ -4,9 +4,16 @@ namespace ChrKo\OStats\BulkQuery;
 
 
 use ChrKo\OStats\DB;
+use ChrKo\Prometheus;
+use Prometheus\Histogram;
 
 abstract class AbstractExecutor implements ExecutorInterface
 {
+    /**
+     * @var Histogram
+     */
+    private static $runHistogram;
+
     /**
      * @var DB
      */
@@ -34,34 +41,34 @@ abstract class AbstractExecutor implements ExecutorInterface
         $this->query = $this->getQueryStart();
     }
 
+    protected abstract function getQueryStart();
+
     public function run($data)
     {
+        Prometheus::getStopwatch()->start('abstract_executor_' . $this->getType());
         $this->query .= $this->dbConn->namedReplace($this->getQueryPart(), $data);
         $this->counter++;
 
         if ($this->counter % $this->batchSize == 0) {
-            $this->flush();
-        }
-
-        return $this;
-    }
-
-    public function __destruct()
-    {
-        $this->finish();
-    }
-
-    public function finish()
-    {
-        if ($this->counter > 0 && $this->counter % $this->batchSize != 0) {
-            $this->flush();
             $this->counter = 0;
+            $this->flush();
         }
+        $event = Prometheus::getStopwatch()->stop('abstract_executor_' . $this->getType());
+        self::getRunHistogram()->observe(
+            $event->getDuration() / 1000,
+            [
+                Prometheus::getProcessId(),
+                $this->getType(),
+            ]
+        );
 
         return $this;
     }
 
-    protected abstract function getQueryStart();
+    protected function getType(): string
+    {
+        return static::class;
+    }
 
     protected abstract function getQueryPart();
 
@@ -84,4 +91,36 @@ abstract class AbstractExecutor implements ExecutorInterface
     }
 
     protected abstract function getQueryEnd();
+
+    public static function getRunHistogram(): Histogram
+    {
+        if (!self::$runHistogram) {
+            return self::$runHistogram = Prometheus::getRegistry()
+                ->registerHistogram(
+                    'ostats',
+                    'abstract_executer_run_seconds',
+                    'Abstract Executer Timing',
+                    [
+                        'process_id',
+                        'type',
+                    ]
+                );
+        }
+        return self::$runHistogram;
+    }
+
+    public function __destruct()
+    {
+        $this->finish();
+    }
+
+    public function finish()
+    {
+        if ($this->counter > 0 && $this->counter % $this->batchSize != 0) {
+            $this->flush();
+            $this->counter = 0;
+        }
+
+        return $this;
+    }
 }

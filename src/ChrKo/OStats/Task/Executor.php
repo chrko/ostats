@@ -3,9 +3,10 @@
 namespace ChrKo\OStats\Task;
 
 use ChrKo\OStats\DB;
-use ChrKo\OStats\XmlApiDataProcessor;
+use ChrKo\Prometheus;
 
-class Executor {
+class Executor
+{
     /**
      * @var bool
      */
@@ -23,24 +24,34 @@ class Executor {
      */
     protected $allowRestrictionIgnorance = true;
 
-    public function __construct($whereRestriction = '', $allowRestrictionIgnorance = true) {
+    public function __construct($whereRestriction = '', $allowRestrictionIgnorance = true)
+    {
         if (!is_string($whereRestriction)) {
             throw new \InvalidArgumentException;
         }
         $this->minimalWhereRestriction = DISABLE_PLAYER ? ' AND `job_type` != \'xml-player\' ' : '';
 
         $this->whereRestriction = $whereRestriction . $this->minimalWhereRestriction;
-        $this->allowRestrictionIgnorance = (bool) $allowRestrictionIgnorance;
+        $this->allowRestrictionIgnorance = (bool)$allowRestrictionIgnorance;
     }
 
-    public static function stop() {
+    public static function stop()
+    {
         self::$stop = true;
     }
 
-    public function work() {
+    public function work()
+    {
         $where = $this->whereRestriction;
         $emptied = false;
         while (true) {
+            Prometheus::getRegistry()->getOrRegisterCounter(
+                'ostats',
+                'executor_loop_count',
+                'Executor loop', [
+                    'process_id'
+                ]
+            )->inc([Prometheus::getProcessId()]);
             if ($this->whereRestriction == $where || $emptied) {
                 echo DB::formatTimestamp(), ' ';
             }
@@ -60,6 +71,13 @@ class Executor {
             $result = $db->query($sql);
 
             if ($result->num_rows == 1) {
+                Prometheus::getRegistry()->getOrRegisterCounter(
+                    'ostats',
+                    'executor_task_retrieve_count',
+                    'Executor loop', [
+                        'process_id'
+                    ]
+                )->inc([Prometheus::getProcessId()]);
                 $where = $this->whereRestriction;
                 $emptied = false;
 
@@ -71,9 +89,39 @@ class Executor {
                     echo '?!? ', $db->affected_rows, ' rows affected', "\n";
                     continue;
                 };
+                Prometheus::getRegistry()->getOrRegisterCounter(
+                    'ostats',
+                    'executor_task_successfully_locked_count',
+                    'Executor loop', [
+                        'process_id'
+                    ]
+                )->inc([Prometheus::getProcessId()]);
 
                 $task['due_time'] = DB::formatTimestamp($task['due_time_int']);
-                $task['delay'] = date('H:i:s', time() - (int) $task['due_time_int']);
+                $task['delay_seconds'] = time() - (int)$task['due_time_int'];
+                $task['delay'] = date('H:i:s', $task['delay_seconds']);
+                Prometheus::getRegistry()->getOrRegisterHistogram(
+                    'ostats',
+                    'executor_task_delay',
+                    'Executor loop',
+                    [
+                        'process_id'
+                    ],
+                    [
+                        0,
+                        2,
+                        5,
+                        10,
+                        15,
+                        30,
+                        60,
+                        120,
+                        180,
+                        240,
+                        300,
+                        600,
+                    ]
+                )->observe($task['delay_seconds'], [Prometheus::getProcessId()]);
 
                 echo DB::namedReplace(
                     'task :job_type: on server :slug: due :due_time:, :delay:...',
@@ -83,14 +131,39 @@ class Executor {
                 try {
                     $job = unserialize($task['job']);
                     if ($job instanceof TaskInterface) {
+                        Prometheus::getStopwatch()->start('job_run');
                         $job->run();
+                        $event = Prometheus::getStopwatch()->stop('job_run');
+                        Prometheus::getRegistry()->getOrRegisterHistogram(
+                            'ostats',
+                            'executor_task_job_run_duration_seconds',
+                            'Executor loop', [
+                                'process_id',
+                                'job_type'
+                            ]
+                        )->observe($event->getDuration() / 1000, [Prometheus::getProcessId(), get_class($job)]);
                     } else {
                         echo ' ERROR INVALID TASK';
                     }
 
                     $db->query('DELETE FROM `tasks` WHERE `id` = ' . $task['id']);
                     echo ' finished', "\n";
+                    Prometheus::getRegistry()->getOrRegisterCounter(
+                        'ostats',
+                        'executor_task_successfully_run_count',
+                        'Executor loop', [
+                            'process_id'
+                        ]
+                    )->inc([Prometheus::getProcessId()]);
                 } catch (\Exception $e) {
+                    Prometheus::getRegistry()->getOrRegisterCounter(
+                        'ostats',
+                        'executor_task_exception_count',
+                        'Executor loop', [
+                            'process_id'
+                        ]
+                    )->inc([Prometheus::getProcessId()]);
+
                     echo ' Exception occured:', "\n";
                     echo 'Type: ', get_class($e), ' ';
                     echo 'Message: ', $e->getMessage(), "\n";
@@ -99,7 +172,7 @@ class Executor {
 
                     $db->query(
                         'UPDATE `tasks` SET `running` = 0, `due_time_int` = \''
-                        . ((int) $task['due_time_int'] + 60 * 10)
+                        . ((int)$task['due_time_int'] + 60 * 10)
                         . '\' WHERE `id` = ' . $task['id']
                     );
                 }
@@ -112,7 +185,7 @@ class Executor {
 
                 $timeToSleep = $timeToSleepMin;
                 if ($result->num_rows > 0) {
-                    $timeToSleep = (int) $result->fetch_object()->due_time_int - time() + 1;
+                    $timeToSleep = (int)$result->fetch_object()->due_time_int - time() + 1;
                     $timeToSleep = $timeToSleep >= $timeToSleepMin ? $timeToSleep : $timeToSleepMin;
                 }
 
@@ -124,6 +197,30 @@ class Executor {
                     $where = $this->minimalWhereRestriction;
                     continue;
                 }
+
+                Prometheus::getRegistry()->getOrRegisterHistogram(
+                    'ostats',
+                    'executor_sleep_time',
+                    'Executor loop',
+                    [
+                        'process_id'
+                    ],
+                    [
+                        0,
+                        2,
+                        5,
+                        10,
+                        15,
+                        20,
+                        25,
+                        30,
+                        35,
+                        40,
+                        45,
+                        50,
+                        60,
+                    ]
+                )->observe($timeToSleep, [Prometheus::getProcessId()]);
 
                 echo "Nothing to do for ${timeToSleep} seconds...\n";
                 sleep($timeToSleep);
