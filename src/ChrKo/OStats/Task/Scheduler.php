@@ -4,7 +4,6 @@ namespace ChrKo\OStats\Task;
 
 
 use ChrKo\OStats\DB;
-use ChrKo\Prometheus;
 
 class Scheduler {
     /**
@@ -46,14 +45,6 @@ class Scheduler {
      * @throws \Exception
      */
     public static function queue(TaskInterface $task, $forceReschedule = false) {
-        Prometheus::getRegistry()->getOrRegisterCounter(
-            'ostats',
-            'scheduler_queue_counter',
-            'Scheduler::queue counter',
-            [
-                'process_id'
-            ]
-        )->inc([Prometheus::getProcessId()]);
         $data = self::prepare($task);
 
         $query = 'SELECT `due_time_int` FROM `tasks`'
@@ -69,14 +60,6 @@ class Scheduler {
 
             $query = DB::namedReplace($query, $data);
             DB::getConn()->query($query);
-            Prometheus::getRegistry()->getOrRegisterCounter(
-                'ostats',
-                'scheduler_queue_non_existing_counter',
-                'Scheduler::queue counter',
-                [
-                    'process_id'
-                ]
-            )->inc([Prometheus::getProcessId()]);
             return;
         }
 
@@ -89,14 +72,6 @@ class Scheduler {
 
             $query = DB::namedReplace($query, $data);
             DB::getConn()->query($query);
-            Prometheus::getRegistry()->getOrRegisterCounter(
-                'ostats',
-                'scheduler_queue_update_counter',
-                'Scheduler::queue counter',
-                [
-                    'process_id'
-                ]
-            )->inc([Prometheus::getProcessId()]);
         }
     }
 }

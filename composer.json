@@ -14,16 +14,13 @@
       "ChrKo\\": "src/ChrKo"
     },
     "files": [
-      "config.php",
-      "config.default.php"
+      "config.php"
     ]
   },
   "require": {
     "symfony/console": "^3.3",
     "symfony/finder": "^3.3",
     "symfony/process": "^3.3",
-    "guzzlehttp/guzzle": "^6.1",
-    "jimdo/prometheus_client_php": "^0.9.1",
-    "symfony/stopwatch": "^3.4"
+    "guzzlehttp/guzzle": "^6.1"
   }
 }

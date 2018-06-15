@@ -31,11 +31,6 @@ class HighscoreInsert extends AbstractExecutor
     {
     }
 
-    protected function getType(): string
-    {
-        return parent::getType() . '_' . $this->category . '_' . $this->type;
-    }
-
     protected function getQueryStart()
     {
         if ($this->category == 1 && $this->type == 3) {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d2dc4c131cb9abe42607c55f914f5c0a",
+    "content-hash": "6dd8ea4ac71075d1b333a1565e5803dc",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -188,53 +188,6 @@
             "time": "2017-03-20T17:10:46+00:00"
         },
         {
-            "name": "jimdo/prometheus_client_php",
-            "version": "v0.9.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Jimdo/prometheus_client_php.git",
-                "reference": "cf3ea93197400a97464ff9bee78cf2169f035327"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Jimdo/prometheus_client_php/zipball/cf3ea93197400a97464ff9bee78cf2169f035327",
-                "reference": "cf3ea93197400a97464ff9bee78cf2169f035327",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "^6.2",
-                "php": ">=5.6.3"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "4.1.0"
-            },
-            "suggest": {
-                "ext-apc": "Required if using APCu.",
-                "ext-redis": "Required if using Redis."
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Prometheus\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Joscha",
-                    "email": "joscha@schnipseljagd.org"
-                },
-                {
-                    "name": "Jan Brauer",
-                    "email": "jan.brauer@jimdo.com"
-                }
-            ],
-            "time": "2017-11-06T11:00:07+00:00"
-        },
-        {
             "name": "psr/http-message",
             "version": "1.0.1",
             "source": {
@@ -333,7 +286,7 @@
         },
         {
             "name": "symfony/console",
-            "version": "v3.4.11",
+            "version": "v3.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
@@ -402,7 +355,7 @@
         },
         {
             "name": "symfony/debug",
-            "version": "v3.4.11",
+            "version": "v3.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/debug.git",
@@ -458,7 +411,7 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v3.4.11",
+            "version": "v3.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
@@ -566,7 +519,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v3.4.11",
+            "version": "v3.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
@@ -612,55 +565,6 @@
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
             "time": "2018-05-16T08:49:21+00:00"
-        },
-        {
-            "name": "symfony/stopwatch",
-            "version": "v3.4.11",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/stopwatch.git",
-                "reference": "eb17cfa072cab26537ac37e9c4ece6c0361369af"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/stopwatch/zipball/eb17cfa072cab26537ac37e9c4ece6c0361369af",
-                "reference": "eb17cfa072cab26537ac37e9c4ece6c0361369af",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.5.9|>=7.0.8"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.4-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Stopwatch\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Stopwatch Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-02-17T14:55:25+00:00"
         }
     ],
     "packages-dev": [],
