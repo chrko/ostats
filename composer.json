@@ -14,7 +14,8 @@
       "ChrKo\\": "src/ChrKo"
     },
     "files": [
-      "config.php"
+      "config.php",
+      "config.default.php"
     ]
   },
   "require": {
