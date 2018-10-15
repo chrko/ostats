@@ -1,0 +1,26 @@
+OStats / OCollect…
+-------------------
+
+This is a project which I started a long time ago. I wanted to collect every
+single accessible xml api file and data.
+I'll quit my ogame activities so the code is published.
+The data model is created to save every data point. It isn't optimized for
+retrieving the stored information.
+
+requirements:
+- php7.0 debian, should be working with the more current release
+- mariadb (mysql should work, too)
+- composer
+
+1. composer install
+2. Copy config.example.php to config.php and adjust to your needs.
+3. ./app.php gt:migrate && ./app.php gt:part
+4. cat initial.list | xargs ./app.php gt:server:create --full-country
+
+To collect the data you have to run (several) instances of "./app.php gt:worker".
+I would recommend to get one priority worker for the highscore data:
+	./app.php gt:worker highscore
+
+To reorganize the partitions of the highscore run ./app.php gt:part.
+You don't need to do this daily, but should do this at least every
+2 weeks.
