@@ -273,6 +273,8 @@ INSERT IGNORE INTO `server_data` (
     `globalDeuteriumSaveFactor`,
     `bashlimit`,
     `probeCargo`,
+    `researchDurationDivisor`,
+    `darkMatterNewAcount`,
     `seen_int`
 ) VALUES (
     :server_id:,
@@ -306,6 +308,8 @@ INSERT IGNORE INTO `server_data` (
     :globalDeuteriumSaveFactor:,
     :bashlimit:,
     :probeCargo:,
+    :researchDurationDivisor:,
+    :darkMatterNewAcount:,
     :seen_int:
 );
 SQL;
@@ -313,6 +317,8 @@ SQL;
             'name',
             'bashlimit',
             'probeCargo',
+            'researchDurationDivisor',
+            'darkMatterNewAcount',
         ];
 
         $escape = function (&$v, $k) {
@@ -340,6 +346,8 @@ SQL;
                 case 'wfBasicPercentageRepairable':
                 case 'bashlimit':
                 case 'probeCargo':
+                case 'researchDurationDivisor':
+                case 'darkMatterNewAcount':
                 case 'seen_int':
                     $v = (string) (int) $v;
                     break;

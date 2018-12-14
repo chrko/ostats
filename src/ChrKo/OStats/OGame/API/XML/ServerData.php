@@ -76,6 +76,8 @@ class ServerData {
             'globalDeuteriumSaveFactor'   => $double,
             'bashlimit'                   => $int,
             'probeCargo'                  => $int,
+            'researchDurationDivisor'     => $int,
+            'darkMatterNewAcount'         => $int,
         ];
 
         while ($xmlReader->read(false)) {
