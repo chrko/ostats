@@ -275,6 +275,7 @@ INSERT IGNORE INTO `server_data` (
     `probeCargo`,
     `researchDurationDivisor`,
     `darkMatterNewAcount`,
+    `cargoHyperspaceTechMultiplier`,
     `seen_int`
 ) VALUES (
     :server_id:,
@@ -310,6 +311,7 @@ INSERT IGNORE INTO `server_data` (
     :probeCargo:,
     :researchDurationDivisor:,
     :darkMatterNewAcount:,
+    :cargoHyperspaceTechMultiplier:,
     :seen_int:
 );
 SQL;
@@ -319,6 +321,7 @@ SQL;
             'probeCargo',
             'researchDurationDivisor',
             'darkMatterNewAcount',
+            'cargoHyperspaceTechMultiplier',
         ];
 
         $escape = function (&$v, $k) {
@@ -348,6 +351,7 @@ SQL;
                 case 'probeCargo':
                 case 'researchDurationDivisor':
                 case 'darkMatterNewAcount':
+                case 'cargoHyperspaceTechMultiplier':
                 case 'seen_int':
                     $v = (string) (int) $v;
                     break;
