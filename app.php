@@ -19,4 +19,5 @@ $app->add(new CreateServerCommand());
 $app->add(new StatusCommand());
 $app->add(new PartitionCommand());
 $app->add(new \ChrKo\OStats\Command\MigrateCommand());
+$app->add(new \ChrKo\OStats\Command\GetAllServerIdsCommand());
 $app->run();
