@@ -5,8 +5,7 @@ namespace ChrKo\OStats\BulkQuery;
 
 use ChrKo\OStats\DB;
 
-abstract class AbstractExecutor implements ExecutorInterface
-{
+abstract class AbstractExecutor implements ExecutorInterface {
     /**
      * @var DB
      */
@@ -28,14 +27,12 @@ abstract class AbstractExecutor implements ExecutorInterface
      * AbstractExecutor constructor.
      * @param DB $dbConn
      */
-    public function __construct(DB $dbConn)
-    {
+    public function __construct(DB $dbConn) {
         $this->dbConn = $dbConn;
         $this->query = $this->getQueryStart();
     }
 
-    public function run($data)
-    {
+    public function run($data) {
         $this->query .= $this->dbConn->namedReplace($this->getQueryPart(), $data);
         $this->counter++;
 
@@ -46,13 +43,11 @@ abstract class AbstractExecutor implements ExecutorInterface
         return $this;
     }
 
-    public function __destruct()
-    {
+    public function __destruct() {
         $this->finish();
     }
 
-    public function finish()
-    {
+    public function finish() {
         if ($this->counter > 0 && $this->counter % $this->batchSize != 0) {
             $this->flush();
             $this->counter = 0;
@@ -65,8 +60,7 @@ abstract class AbstractExecutor implements ExecutorInterface
 
     protected abstract function getQueryPart();
 
-    protected function flush()
-    {
+    protected function flush() {
         $this->queryPartCut();
         $this->query .= $this->getQueryEnd();
         $this->query .= ';';
@@ -76,8 +70,7 @@ abstract class AbstractExecutor implements ExecutorInterface
         return $this;
     }
 
-    protected function queryPartCut()
-    {
+    protected function queryPartCut() {
         $this->query = substr($this->query, 0, -2);
 
         return $this;

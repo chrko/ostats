@@ -4,24 +4,21 @@ namespace ChrKo\XmlReaderProxy;
 
 use ChrKo\XmlReaderProxy\Exceptions\AttributeNotFoundExecption;
 use ChrKo\XmlReaderProxy\Exceptions\XmlReaderExecption;
-
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 
-class XmlReader extends \XMLReader
-{
+class XmlReader extends \XMLReader {
     public static $guzzleClient;
 
-    public static function getGuzzleClient()
-    {
+    public static function getGuzzleClient() {
         if (!self::$guzzleClient && !self::$guzzleClient instanceof ClientInterface) {
             self::$guzzleClient = new Client([
                 'connect_timeout' => 1,
-                'timeout' => 10,
-                'curl' => [
+                'timeout'         => 10,
+                'curl'            => [
                     CURLOPT_FORBID_REUSE => false,
                 ],
-                'headers' => [
+                'headers'         => [
                     'Connection' => 'Keep-Alive',
                     'Keep-Alive' => '300',
                 ]
@@ -31,8 +28,7 @@ class XmlReader extends \XMLReader
         return self::$guzzleClient;
     }
 
-    public function open($uri, $encoding = null, $options = 0)
-    {
+    public function open($uri, $encoding = null, $options = 0) {
         $client = self::getGuzzleClient();
 
         $response = $client->get($uri);
@@ -41,7 +37,7 @@ class XmlReader extends \XMLReader
         }
         $xml = (string) $response->getBody();
 
-        if(defined('CACHE_DIR')) {
+        if (defined('CACHE_DIR')) {
             $tmp = new self();
             $tmp->xml($xml, $encoding, $options);
             $tmp->read();
@@ -82,8 +78,7 @@ class XmlReader extends \XMLReader
         return $return;
     }
 
-    public function read($exception = true)
-    {
+    public function read($exception = true) {
         $return = parent::read();
         if ($return === false && $exception === true) {
             throw new XmlReaderExecption();
@@ -91,8 +86,7 @@ class XmlReader extends \XMLReader
         return $return;
     }
 
-    public function getAttribute($name, $default = null)
-    {
+    public function getAttribute($name, $default = null) {
         $return = parent::getAttribute($name);
 
         if ($return === null && $default !== null) {

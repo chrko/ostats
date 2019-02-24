@@ -5,16 +5,13 @@ namespace ChrKo\OStats\Command;
 use ChrKo\OStats\DB;
 use ChrKo\OStats\Task\Executor;
 use Symfony\Component\Console\Command\Command;
-
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class WorkerCommand extends Command
-{
-    protected function configure()
-    {
+class WorkerCommand extends Command {
+    protected function configure() {
         $this
             ->setName('gt:worker')
             ->setDescription('Executing worker instance')
@@ -31,8 +28,7 @@ class WorkerCommand extends Command
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output) {
         $whereRestriction = '';
 
         $endpoints = $input->getArgument('endpoints');

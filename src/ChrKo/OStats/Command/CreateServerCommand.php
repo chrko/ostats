@@ -8,7 +8,6 @@ use ChrKo\OStats\OGame\API\XML;
 use ChrKo\OStats\Task\Scheduler;
 use ChrKo\OStats\Task\XmlApiUpdate;
 use Symfony\Component\Console\Command\Command;
-
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

@@ -6,6 +6,7 @@ interface TaskInterface {
     public function getDueTime();
 
     public function getJobType();
+
     /**
      * @return string
      */

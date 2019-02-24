@@ -3,17 +3,14 @@
 namespace ChrKo\OStats\BulkQuery;
 
 
-class PlanetInsert extends AbstractExecutor
-{
+class PlanetInsert extends AbstractExecutor {
     protected $batchSize = 1000;
 
-    public function clean($server_id, $last_update_int)
-    {
+    public function clean($server_id, $last_update_int) {
         $this->dbConn->query("DELETE FROM `planet` WHERE `last_update_int` < ${last_update_int} AND `server_id` = '${server_id}';");
     }
 
-    protected function getQueryStart()
-    {
+    protected function getQueryStart() {
         return 'INSERT INTO `planet` (
                 `server_id`,
                 `id`,
@@ -27,13 +24,11 @@ class PlanetInsert extends AbstractExecutor
             ) VALUES ';
     }
 
-    protected function getQueryPart()
-    {
+    protected function getQueryPart() {
         return '(:server_id:, :id:, :name:, :galaxy:, :system:, :position:, :player_id:, :last_update_int:, :last_update_int:),' . "\n";
     }
 
-    protected function getQueryEnd()
-    {
+    protected function getQueryEnd() {
         return "\n" . 'ON DUPLICATE KEY UPDATE
               `name`            = VALUES(`name`),
               `galaxy`          = VALUES(`galaxy`),

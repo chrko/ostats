@@ -3,7 +3,6 @@
 namespace ChrKo\XmlReaderProxy\Exceptions;
 
 
-class XmlReaderExecption extends \Exception
-{
+class XmlReaderExecption extends \Exception {
 
 }

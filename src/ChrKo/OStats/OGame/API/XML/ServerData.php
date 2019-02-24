@@ -2,8 +2,8 @@
 
 namespace ChrKo\OStats\OGame\API\XML;
 
-use ChrKo\XmlReaderProxy\XmlReader;
 use ChrKo\OStats\OGame\API\XML;
+use ChrKo\XmlReaderProxy\XmlReader;
 
 class ServerData {
     const UPDATE_INTERVAL = 2 * 60 * 60;

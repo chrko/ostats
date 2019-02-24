@@ -45,7 +45,7 @@ class Alliances {
                     $alliance['homepage'] = $xmlReader->getAttribute('homepage', false);
                     $alliance['logo'] = $xmlReader->getAttribute('logo', false);
 
-                    $alliance['member'] = array();
+                    $alliance['member'] = [];
                     break;
                 case 'player':
                     $alliance['member'][] = $xmlReader->getAttribute('id');

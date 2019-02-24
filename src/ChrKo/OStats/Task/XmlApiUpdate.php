@@ -14,7 +14,7 @@ class XmlApiUpdate implements TaskInterface {
     protected $serverId = '';
     protected $endpoint = '';
     protected $category = 0;
-    protected $type = 0;
+    protected $type     = 0;
 
     public function __construct($serverId, $endpoint, $category = 0, $type = 0, $dueTime = 0) {
         $this->serverId = (string) $serverId;

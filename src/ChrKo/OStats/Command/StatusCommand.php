@@ -3,21 +3,17 @@
 namespace ChrKo\OStats\Command;
 
 use ChrKo\OStats\DB;
-
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class StatusCommand extends Command
-{
-    protected function configure()
-    {
+class StatusCommand extends Command {
+    protected function configure() {
         $this
             ->setName('gt:status');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output) {
         $where = ' 1 ';
         if (DISABLE_PLAYER) {
             $where = ' `job_type` != \'xml-player\' ';

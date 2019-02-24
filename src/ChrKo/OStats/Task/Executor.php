@@ -3,7 +3,6 @@
 namespace ChrKo\OStats\Task;
 
 use ChrKo\OStats\DB;
-use ChrKo\OStats\XmlApiDataProcessor;
 
 class Executor {
     /**

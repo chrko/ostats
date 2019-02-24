@@ -4,12 +4,8 @@ namespace ChrKo\OStats\Command;
 
 use ChrKo\OStats\DB;
 use ChrKo\OStats\OGame\API\XML;
-use ChrKo\OStats\Task\XmlApiUpdate;
 use Symfony\Component\Console\Command\Command;
-
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class PartitionCommand extends Command {
@@ -43,8 +39,7 @@ class PartitionCommand extends Command {
             $date = clone $today;
             if ($i < 0) {
                 $date->sub(new \DateInterval('P' . -$i . 'D'));
-            }
-            else {
+            } else {
                 $date->add(new \DateInterval('P' . $i . 'D'));
             }
 
@@ -60,7 +55,7 @@ class PartitionCommand extends Command {
         $minDayLimitTimestamp = array_reduce(
             $steps,
             function ($carry, $item) {
-                if ($carry == NULL) {
+                if ($carry == null) {
                     return $item['limit_timestamp'];
                 }
                 return min($carry, $item['limit_timestamp']);
@@ -86,7 +81,7 @@ class PartitionCommand extends Command {
         $maxStepTimestamp = array_reduce(
             $steps,
             function ($carry, $item) {
-                if ($carry == NULL) {
+                if ($carry == null) {
                     return $item['limit_timestamp'];
                 }
                 return max($carry, $item['limit_timestamp']);
@@ -98,13 +93,13 @@ class PartitionCommand extends Command {
             'limit_timestamp'     => $maxSpecialTimestamp = $today->add(new \DateInterval('P1Y'))
                 ->getTimestamp(),
             'limit_timestamp_low' => $maxStepTimestamp,
-            'max'                 => TRUE
+            'max'                 => true
         ];
 
         array_walk($steps, function (&$el) {
             $el['limit_readable'] = date('c', (int) $el['limit_timestamp']);
             $el['limit_readable_low'] = date('c', (int) $el['limit_timestamp_low']);
-            $el['max'] = $el['max'] ?? FALSE;
+            $el['max'] = $el['max'] ?? false;
         });
 
         usort($steps, function ($a, $b) {
@@ -127,11 +122,11 @@ class PartitionCommand extends Command {
                 array_walk($parts, function (&$el) use ($maxSpecialTimestamp) {
                     if ($el['limit_timestamp'] == 'MAXVALUE') {
                         $el['limit_timestamp'] = $maxSpecialTimestamp;
-                        $el['max'] = TRUE;
+                        $el['max'] = true;
                     }
                     $el['limit_timestamp'] = (int) $el['limit_timestamp'];
                     $el['limit_readable'] = date('c', (int) $el['limit_timestamp']);
-                    $el['max'] = $el['max'] ?? FALSE;
+                    $el['max'] = $el['max'] ?? false;
                 });
 
                 usort($parts, function ($a, $b) {
@@ -169,7 +164,7 @@ class PartitionCommand extends Command {
                         $unitOfWork['to_max_limit'] = array_reduce(
                             $unitOfWork['to'],
                             function ($carry, $item) {
-                                if ($carry == NULL) {
+                                if ($carry == null) {
                                     return $item['limit_timestamp'];
                                 }
                                 return max($carry, $item['limit_timestamp']);
@@ -187,9 +182,9 @@ class PartitionCommand extends Command {
                         return array_reduce(
                             $array,
                             function ($carry, $item) use ($needle) {
-                                return $carry || strpos($item['name'], $needle) !== FALSE;
+                                return $carry || strpos($item['name'], $needle) !== false;
                             },
-                            FALSE);
+                            false);
                     };
 
                     if ($nameContains($unitOfWork['from'], 'w_') && $nameContains($unitOfWork['to'], 'd_')) {
@@ -198,7 +193,7 @@ class PartitionCommand extends Command {
                     }
                     if ($nameContains($unitOfWork['from'], 'd_') && $nameContains($unitOfWork['to'], 'w_')) {
                         $dayPartsToReduce = array_filter($unitOfWork['from'], function ($val) {
-                            return strpos($val['name'], 'd_') !== FALSE;
+                            return strpos($val['name'], 'd_') !== false;
                         });
                         foreach ($dayPartsToReduce as $dayPart) {
                             $lowerBoundary = \DateTime::createFromFormat('*Ymd', $dayPart['name'], new \DateTimeZone('Etc/UTC'))
@@ -212,18 +207,18 @@ class PartitionCommand extends Command {
                             $upperBoundaryTimestamp = $upperBoundary->getTimestamp();
 
                             $sql = "DELETE FROM `${table}` PARTITION (`${dayPart['name']}`) WHERE `seen_int` < ${lowerBoundaryTimestamp} OR `seen_int` >= ${upperBoundaryTimestamp};\n";
-                            $output->write(print_r($sql, TRUE));
+                            $output->write(print_r($sql, true));
                             DB::getConn()->query($sql);
 
                             $sql = "ALTER TABLE `${table}` REBUILD PARTITION `${dayPart['name']}`;\n";
-                            $output->write(print_r($sql, TRUE));
+                            $output->write(print_r($sql, true));
                             DB::getConn()->query($sql);
 
                             $sql = "DELETE h FROM `${table}` PARTITION (`${dayPart['name']}`) as h "
                                 . "INNER JOIN (SELECT `server_id`, `id`, MIN(`seen_int`) as `min_seen_int` FROM `${table}` PARTITION (`${dayPart['name']}`) GROUP BY `server_id`, `id`) as tmp "
                                 . "ON ( h.`server_id` = tmp.`server_id` AND h.`id` = tmp.`id`) "
                                 . "WHERE h.`seen_int` <> tmp.`min_seen_int`;\n";
-                            $output->write(print_r($sql, TRUE));
+                            $output->write(print_r($sql, true));
                             DB::getConn()->query($sql);
                         }
                     }
@@ -240,8 +235,7 @@ class PartitionCommand extends Command {
                     foreach ($unitOfWork['to'] as $step) {
                         if (!$step['max']) {
                             $sql .= "PARTITION `${step['name']}` VALUES LESS THAN (${step['limit_timestamp']}),\n";
-                        }
-                        else {
+                        } else {
                             $sql .= "PARTITION `${step['name']}` VALUES LESS THAN MAXVALUE,\n";
                         }
                     }
@@ -249,7 +243,7 @@ class PartitionCommand extends Command {
 
                     $sql .= ');' . "\n";
 
-                    $output->write(print_r($sql, TRUE));
+                    $output->write(print_r($sql, true));
 
                     DB::getConn()->query($sql);
                 }
